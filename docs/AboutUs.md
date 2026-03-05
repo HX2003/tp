@@ -3,3 +3,4 @@
 Display |   Name   |              Github Profile              | Portfolio 
 --------|:--------:|:----------------------------------------:|:---------:
 ![](https://via.placeholder.com/100.png?text=Photo) | Wei Heng | [Github](https://github.com/WeiHeng2003) | [Portfolio](docs/team/WeiHeng2003.md)
+![](https://upload.wikimedia.org/wikipedia/en/7/73/Trollface.png) | Bryan Kuah | [Github](https://github.com/bryankuah) | [Portfolio](docs/team/bryankuah.md)
