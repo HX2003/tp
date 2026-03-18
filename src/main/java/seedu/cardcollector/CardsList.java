@@ -23,26 +23,38 @@ public class CardsList {
         Instant currentInstant = Instant.now();
         card.setLastAdded(currentInstant);
         card.setLastModified(currentInstant);
-
         cards.add(card);
         addedCards.add(card);
     }
 
     public void removeCard(int index) {
+        assert cards != null : "Cards list should be initialized";
+
+        int sizeBefore = cards.size();
+
         if (index < 0) {
             System.out.println("Index cannot be 0 or negative!");
+            assert cards.size() == sizeBefore;
         } else if (index >= cards.size()) {
             System.out.println("Index cannot be greater than inventory size!");
+            assert cards.size() == sizeBefore;
         } else {
             Card removed = cards.remove(index);
 
             Instant currentInstant = Instant.now();
             removed.setLastModified(currentInstant);
             removedCards.add(removed);
+
+            assert cards.size() == sizeBefore - 1 : "Size should decrease after removal";
+            assert removedCards.contains(removed) : "Removed card must be tracked";
         }
     }
 
     public boolean removeCardByName(String name) {
+        assert name != null : "Name should not be null";
+
+        int sizeBefore = cards.size();
+
         for (int i = 0; i < cards.size(); i++) {
             Card card = cards.get(i);
             if (card.getName().equalsIgnoreCase(name)) {
@@ -52,9 +64,14 @@ public class CardsList {
                 removed.setLastModified(currentInstant);
                 removedCards.add(removed);
 
+                assert cards.size() == sizeBefore - 1 : "Size should decrease after removal";
+                assert removedCards.contains(removed) : "Removed card must be tracked";
+
                 return true;
             }
         }
+
+        assert cards.size() == sizeBefore : "Size should not change if not found";
         return false;
     }
 
@@ -107,7 +124,7 @@ public class CardsList {
         }
 
         assert results != null : "The results list should not be null";
-        assert results.size() <= cards.size() : "Found cards cannot exceed total cards inventory size";
+        assert results.size() <= cards.size();
 
         return results;
     }

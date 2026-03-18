@@ -24,6 +24,7 @@ public class CardCollector {
             case "add":
                 if (parts.length < 2) {
                     System.out.println("Usage: add /n [name] /q [quantity] /p [price]");
+                    System.out.println("Missing details for add.");
                     break;
                 }
                 handleAdd(parts[1]);
@@ -32,6 +33,7 @@ public class CardCollector {
             case "find":
                 if (parts.length < 2) {
                     System.out.println("Usage: find [/n NAME] [/p PRICE] [/q QUANTITY]");
+                    System.out.println("At least one field must be provided.");
                     break;
                 }
                 handleFind(parts[1]);
@@ -46,12 +48,18 @@ public class CardCollector {
                 break;
 
             case "list":
+                assert inventory != null : "Inventory should be initialised before listing";
+                int sizeBeforeListing = inventory.getSize();
                 ui.printList(inventory);
+                assert inventory.getSize() == sizeBeforeListing
+                        : "Listing inventory should not modify its size";
                 break;
 
             case "history":
                 if (parts.length < 2) {
                     System.out.println("Usage: history [added|modified|removed]");
+                    System.out.println("Example: history added");
+                    System.out.println("The argument must be provided.");
                     break;
                 }
                 handleHistory(parts[1]);
@@ -73,12 +81,23 @@ public class CardCollector {
         int quantity = Integer.parseInt(arguments.split("/q")[1].split("/n|/p")[0].trim());
         float price = Float.parseFloat(arguments.split("/p")[1].split("/n|/q")[0].trim());
 
+        assert !name.isEmpty() : "Card name should not be empty";
+        assert quantity >= 0 : "Card quantity should not be negative";
+        assert price >= 0.0f : "Card price should not be negative";
+
         Card newCard = new Card(name, quantity, price);
+
+        int sizeBefore = inventory.getSize();
         inventory.addCard(newCard);
+        assert inventory.getSize() == sizeBefore + 1 : "Inventory size should increase by 1 after adding";
+
         ui.printAdded(inventory);
     }
 
     private void handleFind(String arguments) {
+        // Precondition: Arguments passed from the main loop should never be null
+        assert arguments != null : "Arguments string for find command should not be null";
+
         String name = null;
         Float price = null;
         Integer quantity = null;
@@ -94,19 +113,26 @@ public class CardCollector {
                 price = Float.parseFloat(arguments.split("/p")[1].split("/n|/q")[0].trim());
             }
         } catch (NumberFormatException e) {
-            System.out.println("Invalid number format.");
+            System.out.println("Invalid number format for price or quantity.");
+            return;
+        }
+
+        if (name == null && price == null && quantity == null) {
+            System.out.println("At least one search field (/n, /p, /q) must be provided.");
             return;
         }
 
         ArrayList<Card> results = inventory.findCards(name, price, quantity);
+
+        // Postcondition: Results must be successfully returned (even if empty) before printing
+        assert results != null : "Returned search results should not be null";
+
         ui.printFound(results);
     }
 
     private void handleRemove(String argument) {
         argument = argument.trim();
-
-        assert inventory != null : "Inventory should be initialized";
-        assert argument != null && !argument.isEmpty() : "Argument cannot be empty";
+        assert inventory.getSize() >= 0 : "Inventory size cannot be negative";
 
         try {
             int index = Integer.parseInt(argument) - 1;
@@ -119,7 +145,9 @@ public class CardCollector {
             }
 
             inventory.removeCard(index);
-            assert inventory.getSize() == sizeBefore - 1;
+
+            assert inventory.getSize() == sizeBefore - 1
+                    : "Inventory size should decrease after removing by index";
 
             ui.printRemoved(inventory, index);
 
@@ -129,34 +157,60 @@ public class CardCollector {
             boolean removed = inventory.removeCardByName(argument);
 
             if (removed) {
-                assert inventory.getSize() == sizeBefore - 1;
+                assert inventory.getSize() == sizeBefore - 1
+                        : "Inventory size should decrease after removing by name";
+
                 System.out.println("Card \"" + argument + "\" removed successfully.");
                 ui.printList(inventory);
             } else {
-                assert inventory.getSize() == sizeBefore;
-                System.out.println("Card not found.");
+                assert inventory.getSize() == sizeBefore
+                        : "Inventory size should remain unchanged";
+
+                System.out.println("Card with name \"" + argument + "\" not found.");
             }
         }
     }
 
+    /**
+     * Handles the "history" command by displaying different types of inventory change history.
+     * The format of the argument is [added | modified | removed] [NUMBER | all]
+     * Argument matching is intentionally fuzzy and case-insensitive for fast usage
+     * For example, input starting with "a" will
+     * match "added", "m" will match "modified", and "r" will match "removed".
+     *
+     * @param arguments The command argument that determines which history type to display.
+     */
     private void handleHistory(String arguments) {
-        assert arguments != null : "History argument cannot be null";
+        String lowercaseArguments = arguments.trim().toLowerCase();
+        String[] split = lowercaseArguments.split("\\s+", 2);  // Split by one or more spaces
 
-        int sizeBefore = inventory.getSize();
-        int removedBefore = inventory.getRemovedSize();
+        String historyType = split[0];
 
-        if ("added".startsWith(arguments)) {
-            ui.printAddedHistory(inventory, false);
-            assert inventory.getSize() == sizeBefore;
+        int maxDisplayCount = -1;
 
-        } else if ("modified".startsWith(arguments)) {
-            ui.printModifiedHistory(inventory, false);
-            assert inventory.getSize() == sizeBefore;
+        if (split.length > 1) {
+            String maxDisplayCountString = split[1];
+            try {
+                int i = Integer.parseInt(maxDisplayCountString);
 
-        } else if ("removed".startsWith(arguments)) {
-            ui.printRemovedHistory(inventory, false);
-            assert inventory.getRemovedSize() == removedBefore;
+                if (i <= 1) {
+                    return;
+                }
 
+                maxDisplayCount = i;
+            } catch (NumberFormatException e) {
+                if ("all".startsWith(maxDisplayCountString)) {
+                    maxDisplayCount = Integer.MAX_VALUE;
+                }
+            }
+        }
+
+        if ("added".startsWith(historyType)) {
+            ui.printAddedHistory(inventory, maxDisplayCount);
+        } else if ("modified".startsWith(historyType)) {
+            ui.printModifiedHistory(inventory, maxDisplayCount);
+        } else if ("removed".startsWith(historyType)) {
+            ui.printRemovedHistory(inventory, maxDisplayCount);
         } else {
             System.out.println("Unknown argument!");
         }
