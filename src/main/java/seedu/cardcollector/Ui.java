@@ -95,7 +95,6 @@ public class Ui {
     }
 
     public void printFound(ArrayList<Card> results) {
-        // Precondition: Results must exist before attempting to display them
         assert results != null : "Results list passed to Ui should not be null";
 
         printBorder();
@@ -155,14 +154,12 @@ public class Ui {
         int recordsLimit = maxDisplayCount == -1 ? HISTORY_DISPLAY_DEFAULT_LIMIT :
                 Math.min(inventory.getSize(), maxDisplayCount);
 
-        // Sorts the cards according to last modified date
         ArrayList<Card> sortedCards = inventory.getCards().stream()
                 .sorted(Comparator.comparing(Card::getLastModified).reversed())
                 .limit(recordsLimit)
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        assert sortedCards.size() <= recordsLimit :
-                "Number of cards displayed should not be more than the recordsLimit";
+        assert sortedCards.size() <= recordsLimit;
 
         if (sortedCards.isEmpty()) {
             System.out.printf(FORMAT_HISTORY_MODIFIED_NO_RECORD);
@@ -185,15 +182,14 @@ public class Ui {
 
         int recordsLength = inventory.getRemovedSize();
         int recordsLimit = maxDisplayCount == -1 ? HISTORY_DISPLAY_DEFAULT_LIMIT :
-                Math.min(inventory.getSize(), maxDisplayCount);
-        // Sorts the removed cards according to last added date
+                Math.min(inventory.getRemovedSize(), maxDisplayCount);
+
         ArrayList<Card> sortedCards = inventory.getRemovedCards().stream()
                 .sorted(Comparator.comparing(Card::getLastModified).reversed())
                 .limit(recordsLimit)
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        assert sortedCards.size() <= recordsLimit :
-                "Number of cards displayed should not be more than the recordsLimit";
+        assert sortedCards.size() <= recordsLimit;
 
         if (sortedCards.isEmpty()) {
             System.out.printf(FORMAT_HISTORY_REMOVED_NO_RECORD);
