@@ -9,6 +9,19 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 
 public class Ui {
+    private static final String FORMAT_HISTORY_ADDED_NO_RECORD = "No history for cards added found!%n";
+    private static final String FORMAT_HISTORY_MODIFIED_NO_RECORD = "No history for cards modified found!%n";
+    private static final String FORMAT_HISTORY_REMOVED_NO_RECORD = "No history for cards removed found!%n";
+    private static final String FORMAT_HISTORY_ADDED_HAS_RECORD = "Fetching history for cards last added.%n";
+    private static final String FORMAT_HISTORY_MODIFIED_HAS_RECORD = "Fetching history for cards last modified.%n";
+    private static final String FORMAT_HISTORY_REMOVED_HAS_RECORD = "Fetching history for cards last removed.%n";
+    private static final String FORMAT_HISTORY_ADDED_RECORD = "%1$s added -> %2$s%n";
+    private static final String FORMAT_HISTORY_MODIFIED_RECORD = "%1$s modified -> %2$s%n";
+    private static final String FORMAT_HISTORY_REMOVED_RECORD = "%1$s removed -> %2$s%n";
+    private static final String FORMAT_HISTORY_DISPLAY_ALL_RECORDS = "Displaying all %1$d records:%n";
+    private static final String FORMAT_HISTORY_DISPLAY_N_RECORDS = "Displaying latest %1$d out of %2$d records:%n";
+    private static final int HISTORY_DISPLAY_RECORDS_LIMIT = 15;
+
     private final Scanner scanner;
     private final DateTimeFormatter dateTimeFormatter;
 
@@ -94,73 +107,96 @@ public class Ui {
         printBorder();
     }
 
-    public void printAddedHistory(CardsList inventory) {
+    private void printHistoryRecordCount(int recordsLength, int recordsLimit) {
+        if (recordsLength <= recordsLimit) {
+            System.out.printf(FORMAT_HISTORY_DISPLAY_ALL_RECORDS, recordsLength);
+        } else {
+            System.out.printf(FORMAT_HISTORY_DISPLAY_N_RECORDS, recordsLimit, recordsLength);
+        }
+    }
+
+    public void printAddedHistory(CardsList inventory, boolean showAll) {
         printBorder();
+
+        int recordsLength = inventory.getSize();
+        int recordsLimit = showAll ? inventory.getSize() : HISTORY_DISPLAY_RECORDS_LIMIT;
 
         // Sorts the cards according to last added date
         ArrayList<Card> sortedCards = inventory.getCards().stream()
-                .sorted(Comparator.comparing(Card::getLastAdded))
+                .sorted(Comparator.comparing(Card::getLastAdded).reversed())
+                .limit(recordsLimit)
                 .collect(Collectors.toCollection(ArrayList::new));
 
 
         if (sortedCards.isEmpty()) {
-            System.out.println("No history for cards added found!");
+            System.out.printf(FORMAT_HISTORY_ADDED_NO_RECORD);
         } else {
-            System.out.println("Here is the history for cards last added!");
+            System.out.printf(FORMAT_HISTORY_ADDED_HAS_RECORD);
+
+            printHistoryRecordCount(recordsLength, recordsLimit);
 
             for (Card card: sortedCards) {
                 Instant lastAdded = card.getLastAdded();
                 String dateString = dateTimeFormatter.format(lastAdded);
-
-                System.out.println(dateString + " added -> " + card);
+                System.out.printf(FORMAT_HISTORY_ADDED_RECORD, dateString, card);
             }
         }
         printBorder();
     }
 
-    public void printModifiedHistory(CardsList inventory) {
+    public void printModifiedHistory(CardsList inventory, boolean showAll) {
         printBorder();
+
+        int recordsLength = inventory.getSize();
+        int recordsLimit = showAll ? inventory.getSize() : HISTORY_DISPLAY_RECORDS_LIMIT;
 
         // Sorts the cards according to last modified date
         ArrayList<Card> sortedCards = inventory.getCards().stream()
-                .sorted(Comparator.comparing(Card::getLastModified))
+                .sorted(Comparator.comparing(Card::getLastModified).reversed())
+                .limit(recordsLimit)
                 .collect(Collectors.toCollection(ArrayList::new));
 
 
         if (sortedCards.isEmpty()) {
-            System.out.println("No history for cards modified found!");
+            System.out.printf(FORMAT_HISTORY_MODIFIED_NO_RECORD);
         } else {
-            System.out.println("Here is the history for cards last modified!");
+            System.out.printf(FORMAT_HISTORY_MODIFIED_HAS_RECORD);
+
+            printHistoryRecordCount(recordsLength, recordsLimit);
 
             for (Card card: sortedCards) {
                 Instant lastModified = card.getLastModified();
                 String dateString = dateTimeFormatter.format(lastModified);
-
-                System.out.println(dateString + " modified -> " + card);
+                System.out.printf(FORMAT_HISTORY_MODIFIED_RECORD, dateString, card);
             }
         }
         printBorder();
     }
 
-    public void printRemovedHistory(CardsList removedInventory) {
+    public void printRemovedHistory(CardsList removedInventory, boolean showAll) {
         printBorder();
+
+        int recordsLength = removedInventory.getSize();
+        int recordsLimit = showAll ? removedInventory.getSize() : HISTORY_DISPLAY_RECORDS_LIMIT;
 
         // Sorts the removed cards according to last added date
         ArrayList<Card> sortedCards = removedInventory.getCards().stream()
-                .sorted(Comparator.comparing(Card::getLastModified))
+                .sorted(Comparator.comparing(Card::getLastModified).reversed())
+                .limit(recordsLimit)
                 .collect(Collectors.toCollection(ArrayList::new));
 
 
         if (sortedCards.isEmpty()) {
-            System.out.println("No history for cards removed found!");
+            System.out.printf(FORMAT_HISTORY_REMOVED_NO_RECORD);
         } else {
-            System.out.println("Here is the history for cards last removed!");
+            System.out.printf(FORMAT_HISTORY_REMOVED_HAS_RECORD);
+
+            printHistoryRecordCount(recordsLength, recordsLimit);
 
             for (Card card: sortedCards) {
                 Instant lastModified = card.getLastModified();
                 String dateString = dateTimeFormatter.format(lastModified);
-
-                System.out.println(dateString + " removed -> " + card);
+                System.out.printf(FORMAT_HISTORY_REMOVED_RECORD, dateString, card);
             }
         }
         printBorder();

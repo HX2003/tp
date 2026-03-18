@@ -159,14 +159,18 @@ public class CardCollector {
 
     /**
      * Handles the "history" command by displaying different types of inventory change history.
+     * The argument matching is intentionally fuzzy - for example, input starting with "a" will
+     * match "added", "m" will match "modified", and "r" will match "removed".
+     *
+     * @param arguments The command argument that determines which history type to display.
      */
     private void handleHistory(String arguments) {
         if ("added".startsWith(arguments)) {
-            ui.printAddedHistory(inventory);
+            ui.printAddedHistory(inventory, false);
         } else if ("modified".startsWith(arguments)) {
-            ui.printModifiedHistory(inventory);
+            ui.printModifiedHistory(inventory, false);
         } else if ("removed".startsWith(arguments)) {
-            ui.printRemovedHistory(removedInventory);
+            ui.printRemovedHistory(removedInventory, false);
         } else {
             System.out.println("Unknown argument!");
         }
