@@ -193,7 +193,8 @@ public class CardCollector {
             try {
                 int i = Integer.parseInt(maxDisplayCountString);
 
-                if (i <= 1) {
+                if (i < 1) {
+                    System.out.println("History count must be at least 1.");
                     return;
                 }
 
