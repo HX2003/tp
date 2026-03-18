@@ -125,16 +125,20 @@ public class CardCollector {
 
     private void handleRemove(String argument) {
         argument = argument.trim();
+        assert inventory.getSize() >= 0 : "Inventory size cannot be negative";
 
         try {
             int index = Integer.parseInt(argument) - 1;
+            int sizeBefore = inventory.getSize();
 
             if (index < 0 || index >= inventory.getSize()) {
                 System.out.println("Invalid card index.");
                 return;
             }
-
             inventory.removeCard(index);
+
+            assert inventory.getSize() == sizeBefore - 1 : "Inventory size should decrease by 1 after removing";
+
             ui.printRemoved(inventory, index);
 
         } catch (NumberFormatException e) {
