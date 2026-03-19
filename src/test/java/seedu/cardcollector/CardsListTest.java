@@ -103,15 +103,17 @@ public class CardsListTest {
         cardsList.addCard(expensiveCard);
         cardsList.addCard(moderateCard);
 
-        ArrayList<Card> results_descending = cardsList.getSortedCards(CardSortCriteria.PRICE, false, -1, Integer.MAX_VALUE);
-        assertEquals(expensiveCard, results_descending.get(0));
-        assertEquals(moderateCard, results_descending.get(1));
-        assertEquals(cheapCard, results_descending.get(2));
+        ArrayList<Card> resultsDescending = cardsList.getSortedCards(
+                CardSortCriteria.PRICE, false, -1, Integer.MAX_VALUE);
+        assertEquals(expensiveCard, resultsDescending.get(0));
+        assertEquals(moderateCard, resultsDescending.get(1));
+        assertEquals(cheapCard, resultsDescending.get(2));
 
 
-        ArrayList<Card> results_ascending = cardsList.getSortedCards(CardSortCriteria.PRICE, true, -1, Integer.MAX_VALUE);
-        assertEquals(expensiveCard, results_ascending.get(2));
-        assertEquals(moderateCard, results_ascending.get(1));
-        assertEquals(cheapCard, results_ascending.get(0));
+        ArrayList<Card> resultsAscending = cardsList.getSortedCards(
+                CardSortCriteria.PRICE, true, -1, Integer.MAX_VALUE);
+        assertEquals(expensiveCard, resultsAscending.get(2));
+        assertEquals(moderateCard, resultsAscending.get(1));
+        assertEquals(cheapCard, resultsAscending.get(0));
     }
 }
