@@ -4,9 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 
 public class Ui {
     private static final String FORMAT_HISTORY_ADDED_NO_RECORD = "No history for cards added found!%n";
@@ -109,34 +107,28 @@ public class Ui {
         printBorder();
     }
 
-    private void printHistoryRecordCount(int recordsLength, int recordsLimit) {
-        if (recordsLength <= recordsLimit) {
-            System.out.printf(FORMAT_HISTORY_DISPLAY_ALL_RECORDS, recordsLength);
+    private void printHistoryRecordCount(int originalSize, int limitedSize) {
+        if (originalSize > limitedSize) {
+            // Only limitedSize number of records is displayed out of originalSize
+            System.out.printf(FORMAT_HISTORY_DISPLAY_N_RECORDS, limitedSize, originalSize);
         } else {
-            System.out.printf(FORMAT_HISTORY_DISPLAY_N_RECORDS, recordsLimit, recordsLength);
+            System.out.printf(FORMAT_HISTORY_DISPLAY_ALL_RECORDS, originalSize);
         }
     }
 
     public void printAddedHistory(CardsList inventory, int maxDisplayCount) {
         printBorder();
 
-        int recordsLength = inventory.getAddedSize();
-        int recordsLimit = maxDisplayCount == -1 ? HISTORY_DISPLAY_DEFAULT_LIMIT :
-                Math.min(inventory.getAddedSize(), maxDisplayCount);
+        ArrayList<Card> sortedCards = inventory.getSortedAddedCards(
+                CardSortCriteria.LAST_ADDED, false, maxDisplayCount, HISTORY_DISPLAY_DEFAULT_LIMIT);
 
-        ArrayList<Card> sortedCards = inventory.getAddedCards().stream()
-                .sorted(Comparator.comparing(Card::getLastAdded).reversed())
-                .limit(recordsLimit)
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        assert sortedCards.size() <= recordsLimit;
 
         if (sortedCards.isEmpty()) {
             System.out.printf(FORMAT_HISTORY_ADDED_NO_RECORD);
         } else {
             System.out.printf(FORMAT_HISTORY_ADDED_HAS_RECORD);
 
-            printHistoryRecordCount(recordsLength, recordsLimit);
+            printHistoryRecordCount(inventory.getAddedSize(), sortedCards.size());
 
             for (Card card: sortedCards) {
                 Instant lastAdded = card.getLastAdded();
@@ -150,23 +142,16 @@ public class Ui {
     public void printModifiedHistory(CardsList inventory, int maxDisplayCount) {
         printBorder();
 
-        int recordsLength = inventory.getSize();
-        int recordsLimit = maxDisplayCount == -1 ? HISTORY_DISPLAY_DEFAULT_LIMIT :
-                Math.min(inventory.getSize(), maxDisplayCount);
+        ArrayList<Card> sortedCards = inventory.getSortedCards(
+                CardSortCriteria.LAST_MODIFIED, false, maxDisplayCount, HISTORY_DISPLAY_DEFAULT_LIMIT);
 
-        ArrayList<Card> sortedCards = inventory.getCards().stream()
-                .sorted(Comparator.comparing(Card::getLastModified).reversed())
-                .limit(recordsLimit)
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        assert sortedCards.size() <= recordsLimit;
 
         if (sortedCards.isEmpty()) {
             System.out.printf(FORMAT_HISTORY_MODIFIED_NO_RECORD);
         } else {
             System.out.printf(FORMAT_HISTORY_MODIFIED_HAS_RECORD);
 
-            printHistoryRecordCount(recordsLength, recordsLimit);
+            printHistoryRecordCount(inventory.getSize(), sortedCards.size());
 
             for (Card card: sortedCards) {
                 Instant lastModified = card.getLastModified();
@@ -180,23 +165,16 @@ public class Ui {
     public void printRemovedHistory(CardsList inventory, int maxDisplayCount) {
         printBorder();
 
-        int recordsLength = inventory.getRemovedSize();
-        int recordsLimit = maxDisplayCount == -1 ? HISTORY_DISPLAY_DEFAULT_LIMIT :
-                Math.min(inventory.getRemovedSize(), maxDisplayCount);
+        ArrayList<Card> sortedCards = inventory.getSortedRemovedCards(
+                CardSortCriteria.LAST_MODIFIED, false, maxDisplayCount, HISTORY_DISPLAY_DEFAULT_LIMIT);
 
-        ArrayList<Card> sortedCards = inventory.getRemovedCards().stream()
-                .sorted(Comparator.comparing(Card::getLastModified).reversed())
-                .limit(recordsLimit)
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        assert sortedCards.size() <= recordsLimit;
 
         if (sortedCards.isEmpty()) {
             System.out.printf(FORMAT_HISTORY_REMOVED_NO_RECORD);
         } else {
             System.out.printf(FORMAT_HISTORY_REMOVED_HAS_RECORD);
 
-            printHistoryRecordCount(recordsLength, recordsLimit);
+            printHistoryRecordCount(inventory.getRemovedSize(), sortedCards.size());
 
             for (Card card: sortedCards) {
                 Instant lastModified = card.getLastModified();

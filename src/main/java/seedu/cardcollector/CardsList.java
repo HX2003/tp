@@ -2,6 +2,8 @@ package seedu.cardcollector;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 public class CardsList {
     private final ArrayList<Card> cards;
@@ -127,5 +129,84 @@ public class CardsList {
         assert results.size() <= cards.size();
 
         return results;
+    }
+
+    private static Comparator<Card> getSortComparator(CardSortCriteria criteria) {
+        switch (criteria) {
+        case NAME -> {
+            return Comparator.comparing(Card::getName);
+        }
+        case QUANTITY -> {
+            return Comparator.comparingInt(Card::getQuantity);
+        }
+        case PRICE -> {
+            return Comparator.comparingDouble(Card::getPrice);
+        }
+        case LAST_ADDED -> {
+            return Comparator.comparing(Card::getLastAdded,
+                    Comparator.nullsLast(Instant::compareTo));
+        }
+        case LAST_MODIFIED -> {
+            return Comparator.comparing(Card::getLastModified,
+                    Comparator.nullsLast(Instant::compareTo));
+        }
+        default -> {
+            assert false : "Unhandled criteria";
+        }
+        }
+        return null;
+    }
+
+    private static ArrayList<Card> getSortedCardsFromList(
+            ArrayList<Card> cards,
+            CardSortCriteria criteria,
+            boolean isAscending,
+            int maxLimit,
+            int defaultMaxLimit) {
+
+        if (cards.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Comparator<Card> comparator = getSortComparator(criteria);
+
+        assert comparator != null;
+
+        // Apply ascending/descending order
+        if (!isAscending) {
+            comparator = comparator.reversed();
+        }
+
+        int recordsLimit = (maxLimit == -1) ? defaultMaxLimit :
+                Math.min(cards.size(), maxLimit);
+
+        return cards.stream()
+                .sorted(comparator)
+                .limit(recordsLimit)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    public ArrayList<Card> getSortedCards(
+            CardSortCriteria criteria,
+            boolean isAscending,
+            int maxLimit,
+            int defaultMaxLimit) {
+        return getSortedCardsFromList(cards, criteria, isAscending, maxLimit, defaultMaxLimit);
+    }
+
+    public ArrayList<Card> getSortedAddedCards(
+            CardSortCriteria criteria,
+            boolean isAscending,
+            int maxLimit,
+            int defaultMaxLimit) {
+        return getSortedCardsFromList(addedCards, criteria, isAscending, maxLimit, defaultMaxLimit);
+    }
+
+    public ArrayList<Card> getSortedRemovedCards(
+            CardSortCriteria criteria,
+            boolean isAscending,
+            int maxLimit,
+            int defaultMaxLimit) {
+        return getSortedCardsFromList(removedCards, criteria, isAscending, maxLimit, defaultMaxLimit);
     }
 }
