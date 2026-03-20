@@ -14,7 +14,7 @@ public class HistoryCommand extends Command {
     }
 
     @Override
-    public void execute(Ui ui, CardsList inventory) {
+    public CommandResult execute(Ui ui, CardsList inventory) {
         switch (historyType) {
         case ADDED -> ui.printAddedHistory(inventory, maxDisplayCount);
         case MODIFIED -> ui.printModifiedHistory(inventory, maxDisplayCount);
@@ -23,5 +23,6 @@ public class HistoryCommand extends Command {
             assert false : "Invalid history type";
         }
         }
+        return new CommandResult(false);
     }
 }
