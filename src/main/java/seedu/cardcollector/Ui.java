@@ -7,6 +7,11 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Ui {
+    private static final String FORMAT_UNKNOWN_COMMAND = "Unknown command \"%1$s\"%n";
+    private static final String FORMAT_INVALID_ARGUMENT = "%1$s%n%n";
+    private static final String FORMAT_INVALID_ARGUMENT_SYNTAX_USAGE = "Usage: \"%1$s\"%n";
+    private static final String FORMAT_INVALID_ARGUMENT_EXAMPLE_USAGE = "Example: \"%1$s\"%n";
+
     private static final String FORMAT_HISTORY_ADDED_NO_RECORD = "No history for cards added found!%n";
     private static final String FORMAT_HISTORY_MODIFIED_NO_RECORD = "No history for cards modified found!%n";
     private static final String FORMAT_HISTORY_REMOVED_NO_RECORD = "No history for cards removed found!%n";
@@ -51,6 +56,26 @@ public class Ui {
         System.out.println("What can I do for you?");
         printBorder();
     }
+
+    public void printInvalidArgumentWarning(String message, String[] usage) {
+        printBorder();
+        System.out.printf(FORMAT_INVALID_ARGUMENT, message);
+
+        assert usage.length > 0;
+
+        System.out.printf(FORMAT_INVALID_ARGUMENT_SYNTAX_USAGE, usage[0]);
+        for (int i = 1; i < usage.length; i++) {
+            System.out.printf(FORMAT_INVALID_ARGUMENT_EXAMPLE_USAGE, usage[i]);
+        }
+        printBorder();
+    }
+
+    public void printUnknownCommandWarning(String message) {
+        printBorder();
+        System.out.printf(FORMAT_UNKNOWN_COMMAND, message);
+        printBorder();
+    }
+
 
     public void printExit() {
         printBorder();

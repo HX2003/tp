@@ -7,7 +7,9 @@ public class ParseUnknownCommandException extends ParseException {
     /**
      * Constructs a new exception with a specified message.
      *
-     * @param message The message explaining the cause of the exception.
+     * @param message A message which is
+     *                the name of unknown command user has entered.
+     *
      */
     public ParseUnknownCommandException(String message) {
         super(message);

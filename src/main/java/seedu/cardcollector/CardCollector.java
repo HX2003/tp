@@ -1,7 +1,9 @@
 package seedu.cardcollector;
 
 import seedu.cardcollector.command.Command;
-import seedu.cardcollector.command.HistoryCommand;
+import seedu.cardcollector.exception.ParseInvalidArgumentException;
+import seedu.cardcollector.exception.ParseUnknownCommandException;
+import seedu.cardcollector.parsing.Parser;
 
 import java.util.ArrayList;
 
@@ -20,9 +22,25 @@ public class CardCollector {
 
         while (isRunning) {
             String input = ui.readInput();
+
+            try {
+                Parser parser = new Parser();
+                Command command = parser.parse(input);
+
+                assert command != null;
+
+                command.execute(ui, inventory);
+            } catch (ParseInvalidArgumentException e) {
+                ui.printInvalidArgumentWarning(e.getMessage(), e.getUsage());
+            } catch (ParseUnknownCommandException e) {
+                // TODO uncomment this line once the parser has been migrated
+                // ui.printUnknownCommandWarning(e.getMessage());
+            }
+
             String[] parts = input.split(" ", 2);
             String commandString = parts[0].toLowerCase();
 
+            // TODO Please move into the parser, thanks!
             switch (commandString) {
             case "add":
                 if (parts.length < 2) {
@@ -58,26 +76,13 @@ public class CardCollector {
                         : "Listing inventory should not modify its size";
                 break;
 
-            case "history":
-                if (parts.length < 2) {
-                    System.out.println("Usage: history [added | modified | removed] [NUMBER | all]");
-                    System.out.println("Example: history added");
-                    System.out.println("The argument must be provided.");
-                    break;
-                }
-                Command command = handleHistory(parts[1]);
-                if (command != null) {
-                    command.execute(ui, inventory);
-                }
-                break;
-
             case "bye":
                 ui.printExit();
                 isRunning = false;
                 break;
 
             default:
-                System.out.println("Unknown command!");
+                System.out.println("DEPRECATED Unknown command!");
             }
         }
     }
@@ -181,52 +186,6 @@ public class CardCollector {
         }
     }
 
-    /**
-     * Handles the "history" command by displaying different types of inventory change history.
-     * The format of the argument is [added | modified | removed] [NUMBER | all]
-     * Argument matching is intentionally fuzzy and case-insensitive for fast usage
-     * For example, input starting with "a" will
-     * match "added", "m" will match "modified", and "r" will match "removed".
-     *
-     * @param arguments The command argument that determines which history type to display.
-     */
-    private Command handleHistory(String arguments) {
-        String lowercaseArguments = arguments.trim().toLowerCase();
-        String[] split = lowercaseArguments.split("\\s+", 2);  // Split by one or more spaces
-
-        String historyType = split[0];
-
-        int maxDisplayCount = -1;
-
-        if (split.length > 1) {
-            String maxDisplayCountString = split[1];
-            try {
-                int i = Integer.parseInt(maxDisplayCountString);
-
-                if (i < 1) {
-                    System.out.println("History count must be at least 1.");
-                    return null;
-                }
-
-                maxDisplayCount = i;
-            } catch (NumberFormatException e) {
-                if ("all".startsWith(maxDisplayCountString)) {
-                    maxDisplayCount = Integer.MAX_VALUE;
-                }
-            }
-        }
-
-        if (CardHistoryType.ADDED.getName().startsWith(historyType)) {
-            return new HistoryCommand(CardHistoryType.ADDED, maxDisplayCount);
-        } else if (CardHistoryType.MODIFIED.getName().startsWith(historyType)) {
-            return new HistoryCommand(CardHistoryType.MODIFIED, maxDisplayCount);
-        } else if (CardHistoryType.REMOVED.getName().startsWith(historyType)) {
-            return new HistoryCommand(CardHistoryType.REMOVED, maxDisplayCount);
-        } else {
-            System.out.println("Unknown argument!");
-            return null;
-        }
-    }
 
     public static void main(String[] args) {
         new CardCollector().run();
