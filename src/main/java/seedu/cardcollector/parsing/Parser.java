@@ -3,6 +3,7 @@ package seedu.cardcollector.parsing;
 import seedu.cardcollector.CardHistoryType;
 import seedu.cardcollector.command.AddCommand;
 import seedu.cardcollector.command.Command;
+import seedu.cardcollector.command.EditCommand;
 import seedu.cardcollector.command.ExitCommand;
 import seedu.cardcollector.command.FindCommand;
 import seedu.cardcollector.command.HistoryCommand;
@@ -24,6 +25,7 @@ public class Parser {
     private static final String KEYWORD_FIND_COMMAND = "find";
     private static final String KEYWORD_LIST_COMMAND = "list";
     private static final String KEYWORD_EXIT_COMMAND = "bye";
+    private static final String KEYWORD_EDIT_COMMAND = "edit";
 
     private static final String[] USAGE_HISTORY_COMMAND = {
         "history [added | modified | removed] [NUMBER | all]",
@@ -62,6 +64,8 @@ public class Parser {
             return handleList(arguments);
         case KEYWORD_EXIT_COMMAND:
             return handleExit(arguments);
+        case KEYWORD_EDIT_COMMAND:
+            return handleEdit(arguments);
         default:
             throw new ParseUnknownCommandException(commandKeyword);
         }
@@ -247,5 +251,67 @@ public class Parser {
         } else {
             throw new ParseInvalidArgumentException("Unknown history argument!", USAGE_HISTORY_COMMAND);
         }
+    }
+
+    private Command handleEdit(String args) throws ParseInvalidArgumentException {
+        if (args.isBlank()) {
+            throw new ParseInvalidArgumentException(
+                    "Index must be provided",
+                    new String[]{"edit INDEX [/n NAME] [/q QTY] [/p PRICE]"}
+            );
+        }
+
+        String[] parts = args.trim().split(REGEX_WHITESPACES, 2);
+        int index;
+        try {
+            index = Integer.parseInt(parts[0].trim()) - 1;
+        } catch (NumberFormatException e) {
+            throw new ParseInvalidArgumentException(
+                    "Index must be a valid integer",
+                    new String[]{"edit INDEX [/n NAME] [/q QTY] [/p PRICE]"}
+            );
+        }
+
+        String flagArgs = parts.length > 1 ? parts[1] : "";
+
+        String name = null;
+        Integer quantity = null;
+        Float price = null;
+
+        if (!flagArgs.isBlank()) {
+            try {
+                if (flagArgs.contains("/n")) {
+                    name = flagArgs.split("/n")[1].split("/q|/p")[0].trim();
+                    if (name.isEmpty()) {
+                        name = null;
+                    }
+                }
+                if (flagArgs.contains("/q")) {
+                    quantity = Integer.parseInt(flagArgs.split("/q")[1].split("/n|/p")[0].trim());
+                }
+                if (flagArgs.contains("/p")) {
+                    price = Float.parseFloat(flagArgs.split("/p")[1].split("/n|/q")[0].trim());
+                }
+            } catch (NumberFormatException e) {
+                throw new ParseInvalidArgumentException(
+                        "Quantity must be an integer and price must be float",
+                        new String[]{"edit INDEX [/n NAME] [/q QTY] [/p PRICE]"}
+                );
+            } catch (Exception e) {
+                throw new ParseInvalidArgumentException(
+                        "Invalid edit format",
+                        new String[]{"edit INDEX [/n NAME] [/q QTY] [/p PRICE]"}
+                );
+            }
+        }
+
+        if (name == null && quantity == null && price == null) {
+            throw new ParseInvalidArgumentException(
+                    "At least one field (/n, /q or /p) must be provided to edit",
+                    new String[]{"edit INDEX [/n NAME] [/q QTY] [/p PRICE]"}
+            );
+        }
+
+        return new EditCommand(index, name, quantity, price);
     }
 }

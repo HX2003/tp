@@ -227,4 +227,29 @@ public class CardsList {
             int defaultMaxLimit) {
         return getSortedCardsFromList(removedCards, criteria, isAscending, maxLimit, defaultMaxLimit);
     }
+
+    public void editCard(int index, String newName, Integer newQuantity, Float newPrice) {
+        assert index >= 0 && index < cards.size() : "Index should be validated before calling editCard";
+
+        Card card = cards.get(index);
+        Instant currentInstant = Instant.now();
+        boolean anyChange = false;
+
+        if (newName != null && !newName.trim().isEmpty()) {
+            card.setName(newName.trim());
+            anyChange = true;
+        }
+        if (newQuantity != null) {
+            card.setQuantity(newQuantity);
+            anyChange = true;
+        }
+        if (newPrice != null) {
+            card.setPrice(newPrice);
+            anyChange = true;
+        }
+
+        if (anyChange) {
+            card.setLastModified(currentInstant);
+        }
+    }
 }

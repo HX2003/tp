@@ -97,6 +97,11 @@ public class Ui {
         printList(inventory);
     }
 
+    public void printEdited(CardsList inventory, int index) {
+        System.out.println("I have edited card " + (index + 1) + "!");
+        printList(inventory);
+    }
+
     public void printRemoveByNameSuccess(String targetName, CardsList inventory) {
         printBorder();
         System.out.println("Card \"" + targetName + "\" removed successfully");
