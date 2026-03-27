@@ -1,6 +1,6 @@
 package seedu.cardcollector.command;
 
-import seedu.cardcollector.CardsList;
+import seedu.cardcollector.card.CardsList;
 import seedu.cardcollector.Storage;
 import seedu.cardcollector.Ui;
 import seedu.cardcollector.UploadUndoState;

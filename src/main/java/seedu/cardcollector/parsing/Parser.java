@@ -1,7 +1,7 @@
 package seedu.cardcollector.parsing;
 
 import java.nio.file.Path;
-import seedu.cardcollector.CardHistoryType;
+import seedu.cardcollector.card.CardHistoryType;
 import seedu.cardcollector.command.AddCommand;
 import seedu.cardcollector.command.AcquiredCommand;
 import seedu.cardcollector.command.Command;
@@ -16,7 +16,7 @@ import seedu.cardcollector.command.RemoveCardByIndexCommand;
 import seedu.cardcollector.command.RemoveCardByNameCommand;
 import seedu.cardcollector.command.UndoUploadCommand;
 import seedu.cardcollector.command.UploadCommand;
-import seedu.cardcollector.CardSortCriteria;
+import seedu.cardcollector.card.CardSortCriteria;
 import seedu.cardcollector.command.ReorderCommand;
 import seedu.cardcollector.exception.ParseBlankCommandException;
 import seedu.cardcollector.exception.ParseInvalidArgumentException;
@@ -48,8 +48,9 @@ public class Parser {
     };
 
     private static final String[] USAGE_HISTORY_COMMAND = {
-        "history [added | modified | removed] [NUMBER | all]",
-        "history added"
+        "history [added | modified | removed | entire] [NUMBER | all] [ascending | descending]",
+        "history",
+        "history added all"
     };
 
     private static final String[] USAGE_FIND_COMMAND = {
@@ -111,33 +112,6 @@ public class Parser {
         default:
             throw new ParseUnknownCommandException(commandKeyword);
         }
-    }
-
-    private static int getMaxDisplayCount(String[] split, String[] usage) throws ParseInvalidArgumentException {
-        int maxDisplayCount = -1;
-
-        if (split.length <= 1) {
-            return maxDisplayCount;
-        }
-
-        String maxDisplayCountString = split[1];
-        try {
-            int i = Integer.parseInt(maxDisplayCountString);
-
-            if (i < 1) {
-                throw new ParseInvalidArgumentException("Display count must be at least 1", usage);
-            }
-
-            maxDisplayCount = i;
-        } catch (NumberFormatException e) {
-            if ("all".startsWith(maxDisplayCountString)) {
-                maxDisplayCount = Integer.MAX_VALUE;
-            } else {
-                throw new ParseInvalidArgumentException("Display count invalid", usage);
-            }
-        }
-
-        return maxDisplayCount;
     }
 
     private Command handleAdd(String args) throws ParseInvalidArgumentException {
@@ -308,10 +282,70 @@ public class Parser {
         };
     }
 
+
+    private static int getMaxDisplayCount(String maxDisplayCountString, String[] usage)
+            throws ParseInvalidArgumentException {
+        int maxDisplayCount = -1;
+
+        if (maxDisplayCountString == null || maxDisplayCountString.isBlank()) {
+            return maxDisplayCount;
+        }
+
+        try {
+            int i = Integer.parseInt(maxDisplayCountString);
+
+            if (i < 1) {
+                throw new ParseInvalidArgumentException("Display count must be at least 1", usage);
+            }
+
+            maxDisplayCount = i;
+        } catch (NumberFormatException e) {
+            if ("all".startsWith(maxDisplayCountString)) {
+                maxDisplayCount = Integer.MAX_VALUE;
+            } else {
+                throw new ParseInvalidArgumentException("Display count invalid", usage);
+            }
+        }
+
+        return maxDisplayCount;
+    }
+
+    /**
+     * Parses a string to determine if sorting should be in descending order.
+     * Argument matching is intentionally fuzzy for fast usage.
+     *
+     * @param isDescendingString The string to parse, may be null or blank.
+     * @param usage The command usage information array, used for error messaging
+     *              when an invalid argument is provided.
+     * @return Returns true when input is null, blank, or match prefix of "descending".
+     * @throws ParseInvalidArgumentException If the input string is not blank,
+     *                                       but does not match prefix of "descending" or "ascending"
+     */
+    private static boolean getIsDescending(String isDescendingString, String[] usage)
+            throws ParseInvalidArgumentException {
+        boolean isDescending = true;
+
+        if (isDescendingString == null || isDescendingString.isBlank()) {
+            return isDescending;
+        }
+
+        if ("descending".startsWith(isDescendingString)) {
+            isDescending = true;
+        } else if ("ascending".startsWith(isDescendingString)) {
+            isDescending = false;
+        } else {
+            throw new ParseInvalidArgumentException("Sorting order not recognized!", usage);
+        }
+
+        return isDescending;
+    }
+
+
     /**
      * Handles the "history" command by displaying different types of inventory change history.
-     * The format of the argument is [added | modified | removed] [NUMBER | all]
-     * Argument matching is intentionally fuzzy and case-insensitive for fast usage
+     * The argument format is [added | modified | removed | entire] [NUMBER | all] [ascending | descending]
+     * All arguments are optional, but if provided, they must be in order.
+     * Argument matching is intentionally fuzzy for fast usage.
      * For example, input starting with "a" will
      * match "added", "m" will match "modified", and "r" will match "removed".
      *
@@ -319,23 +353,28 @@ public class Parser {
      */
     private Command handleHistory(String arguments) throws ParseInvalidArgumentException {
         if (arguments.isBlank()) {
-            throw new ParseInvalidArgumentException("Argument must be provided!", USAGE_HISTORY_COMMAND);
+            return new HistoryCommand(CardHistoryType.ENTIRE);
         }
 
-        String lowercaseArguments = arguments.trim().toLowerCase();
-        String[] split = lowercaseArguments.split(REGEX_WHITESPACES, 2);
+        SplitTokenizer tokenizer = new SplitTokenizer(REGEX_WHITESPACES);
+        tokenizer.tokenize(arguments);
 
-        String historyType = split[0];
+        String historyTypeString = tokenizer.getString(0);
+        String maxDisplayCountString = tokenizer.getString(1);
+        String isDescendingString = tokenizer.getString(2);
 
-        int maxDisplayCount = getMaxDisplayCount(split, USAGE_HISTORY_COMMAND);
+        int maxDisplayCount = getMaxDisplayCount(maxDisplayCountString, USAGE_HISTORY_COMMAND);
+        boolean isDescending = getIsDescending(isDescendingString, USAGE_HISTORY_COMMAND);
 
-        if (CardHistoryType.ADDED.getName().startsWith(historyType)) {
-            return new HistoryCommand(CardHistoryType.ADDED, maxDisplayCount);
-        } else if (CardHistoryType.MODIFIED.getName().startsWith(historyType)) {
-            return new HistoryCommand(CardHistoryType.MODIFIED, maxDisplayCount);
-        } else if (CardHistoryType.REMOVED.getName().startsWith(historyType)) {
-            return new HistoryCommand(CardHistoryType.REMOVED, maxDisplayCount);
-        } else {
+        if (CardHistoryType.ADDED.getName().startsWith(historyTypeString)) {
+            return new HistoryCommand(CardHistoryType.ADDED, maxDisplayCount, isDescending);
+        } else if (CardHistoryType.MODIFIED.getName().startsWith(historyTypeString)) {
+            return new HistoryCommand(CardHistoryType.MODIFIED, maxDisplayCount, isDescending);
+        } else if (CardHistoryType.REMOVED.getName().startsWith(historyTypeString)) {
+            return new HistoryCommand(CardHistoryType.REMOVED, maxDisplayCount, isDescending);
+        }  else if (CardHistoryType.ENTIRE.getName().startsWith(historyTypeString)) {
+            return new HistoryCommand(CardHistoryType.ENTIRE, maxDisplayCount, isDescending);
+        }   else {
             throw new ParseInvalidArgumentException("Unknown history argument!", USAGE_HISTORY_COMMAND);
         }
     }

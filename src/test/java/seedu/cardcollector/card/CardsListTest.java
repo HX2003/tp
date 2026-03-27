@@ -1,4 +1,4 @@
-package seedu.cardcollector;
+package seedu.cardcollector.card;
 
 import org.junit.jupiter.api.Test;
 
@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CardsListTest {
 
+    //@@author bryankuah
     @Test
     public void addCard_card_success() {
         CardsList cardsList = new CardsList();
@@ -137,44 +138,6 @@ public class CardsListTest {
         ArrayList<Card> results = cardsList.findCards("Snorlax", 100.00f, null);
         
         assertEquals(0, results.size());
-    }
-
-    @Test
-    public void getSortedCards_byPrice_success() {
-        CardsList cardsList = new CardsList();
-
-        Card cheapCard = new Card.Builder()
-                .name("Cheap card")
-                .price(2.00f)
-                .quantity(1)
-                .build();
-        Card expensiveCard = new Card.Builder()
-                .name("Expensive card")
-                .price(888.00f)
-                .quantity(2)
-                .build();
-        Card moderateCard = new Card.Builder()
-                .name("Moderate card")
-                .price(50)
-                .quantity(3)
-                .build();
-
-        cardsList.addCard(cheapCard);
-        cardsList.addCard(expensiveCard);
-        cardsList.addCard(moderateCard);
-
-        ArrayList<Card> resultsDescending = cardsList.getSortedCards(
-                CardSortCriteria.PRICE, false, -1, Integer.MAX_VALUE);
-        assertEquals(expensiveCard, resultsDescending.get(0));
-        assertEquals(moderateCard, resultsDescending.get(1));
-        assertEquals(cheapCard, resultsDescending.get(2));
-
-
-        ArrayList<Card> resultsAscending = cardsList.getSortedCards(
-                CardSortCriteria.PRICE, true, -1, Integer.MAX_VALUE);
-        assertEquals(expensiveCard, resultsAscending.get(2));
-        assertEquals(moderateCard, resultsAscending.get(1));
-        assertEquals(cheapCard, resultsAscending.get(0));
     }
 
     @Test
@@ -320,11 +283,65 @@ public class CardsListTest {
         assertEquals("Low", ordered.get(2).getName());
     }
 
+    //@@author HX2003
     @Test
-    public void reorder_emptyList_doesNothing() {
+    public void cardsList_addEditRemove_historySuccess() {
         CardsList cardsList = new CardsList();
-        cardsList.reorder(CardSortCriteria.LAST_ADDED, true);
-        assertEquals(0, cardsList.getSize());
-    }
 
+        Card card0 = new Card.Builder().name("Zero").price(5.0f).quantity(1).build();
+        Card card1 = new Card.Builder().name("One").price(15.0f).quantity(5).build();
+
+        // Add various cards
+        cardsList.addCard(card0);
+        cardsList.addCard(card1);
+
+        // Remove a card entirely
+        cardsList.removeCardByIndex(1);
+
+        // Edit name of the card only
+        cardsList.editCard(0, "Zero noro", null, null);
+
+        // Edit quantity (from 1 to 5) of the card only
+        cardsList.editCard(0, null, 5, null);
+
+        // Edit quantity (from 5 to 4) of the card only
+        cardsList.editCard(0, null, 4, null);
+
+        // Edit quantity (from 4 to 4) of the card only,
+        // but actually quantity was not changed
+        cardsList.editCard(0, null, 4, null);
+
+        // Edit quantity (from 4 to 3) of the card,
+        // at the same time change its price
+        cardsList.editCard(0, null, 3, 9.99f);
+
+        CardsHistory history = cardsList.getHistory();
+        ArrayList<CardHistoryEntry> historyList = history.getSortedHistoryList(false);
+
+        // Now check whether the history is correct
+        assertEquals(CardHistoryType.ADDED, historyList.get(0).getCardHistoryType());
+        assertEquals(card0.getUid(), historyList.get(0).getMostRecent().getUid());
+
+        assertEquals(CardHistoryType.ADDED, historyList.get(1).getCardHistoryType());
+        assertEquals(card1.getUid(), historyList.get(1).getMostRecent().getUid());
+
+        assertEquals(CardHistoryType.REMOVED, historyList.get(2).getCardHistoryType());
+        assertEquals(card1.getUid(), historyList.get(2).getMostRecent().getUid());
+
+        assertEquals(CardHistoryType.MODIFIED, historyList.get(3).getCardHistoryType());
+        assertEquals("Zero noro", historyList.get(3).getMostRecent().getName());
+
+        assertEquals(CardHistoryType.ADDED, historyList.get(4).getCardHistoryType());
+        assertEquals(5, historyList.get(4).getMostRecent().getQuantity());
+
+        assertEquals(CardHistoryType.REMOVED, historyList.get(5).getCardHistoryType());
+        assertEquals(4, historyList.get(5).getMostRecent().getQuantity());
+
+        assertEquals(CardHistoryType.REMOVED, historyList.get(6).getCardHistoryType());
+        assertEquals(3, historyList.get(6).getMostRecent().getQuantity());
+
+        assertEquals(CardHistoryType.MODIFIED, historyList.get(7).getCardHistoryType());
+        assertEquals(9.99f, historyList.get(7).getMostRecent().getPrice());
+    }
+    //@@author
 }

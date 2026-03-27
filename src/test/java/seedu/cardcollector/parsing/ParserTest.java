@@ -46,11 +46,6 @@ public class ParserTest {
 
         assertThrows(
                 ParseInvalidArgumentException.class,
-                () -> parser.parse("history")
-        );
-
-        assertThrows(
-                ParseInvalidArgumentException.class,
                 () -> parser.parse("history delicious")
         );
 
@@ -63,8 +58,12 @@ public class ParserTest {
                 ParseInvalidArgumentException.class,
                 () -> parser.parse("history added 3t35t45")
         );
-    }
 
+        assertThrows(
+                ParseInvalidArgumentException.class,
+                () -> parser.parse("history added all zz")
+        );
+    }
 
     @Test
     public void parse_historyCommand_success() throws
@@ -72,6 +71,9 @@ public class ParserTest {
             ParseUnknownCommandException,
             ParseInvalidArgumentException {
         Parser parser = new Parser();
+
+        Command command0 = parser.parse("history");
+        assertInstanceOf(HistoryCommand.class, command0);
 
         Command command1 = parser.parse("history added");
         assertInstanceOf(HistoryCommand.class, command1);
@@ -87,8 +89,15 @@ public class ParserTest {
 
         Command command5 = parser.parse("history modified 5");
         assertInstanceOf(HistoryCommand.class, command5);
+
+        Command command6 = parser.parse("history entire 5 asc");
+        assertInstanceOf(HistoryCommand.class, command6);
+
+        Command command7 = parser.parse("history entire 5 descend");
+        assertInstanceOf(HistoryCommand.class, command7);
     }
 
+    //@@author Simplificatedd
     @Test
     public void parse_transferCommands_success() throws ParseBlankCommandException,
             ParseUnknownCommandException, ParseInvalidArgumentException {

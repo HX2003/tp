@@ -1,6 +1,6 @@
 package seedu.cardcollector.command;
 
-import seedu.cardcollector.CardSortCriteria;
+import seedu.cardcollector.card.CardSortCriteria;
 
 public class ReorderCommand extends Command {
 

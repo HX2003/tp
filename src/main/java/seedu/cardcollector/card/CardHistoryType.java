@@ -1,9 +1,10 @@
-package seedu.cardcollector;
+package seedu.cardcollector.card;
 
 public enum CardHistoryType {
     ADDED("added"),
     REMOVED("removed"),
-    MODIFIED("modified");
+    MODIFIED("modified"),
+    ENTIRE("entire");
 
     private final String name;
 

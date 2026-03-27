@@ -1,5 +1,9 @@
 package seedu.cardcollector;
 
+import seedu.cardcollector.card.Card;
+import seedu.cardcollector.card.CardsHistory;
+import seedu.cardcollector.card.CardsList;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -13,7 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class Storage {
-    private static final String FILE_HEADER = "CARDCOLLECTOR_STORAGE_V1";
+    private static final String FILE_HEADER = "CARDCOLLECTOR_STORAGE_V2";
     private static final String NULL_VALUE = "-";
 
     private final Path filePath;
@@ -37,7 +41,6 @@ public class Storage {
         }
 
         Map<String, ArrayList<Card>> sections = new HashMap<>();
-        Map<UUID, Card> cardsById = new HashMap<>();
         String currentSection = null;
 
         for (int i = 1; i < lines.size(); i++) {
@@ -57,12 +60,12 @@ public class Storage {
                 continue;
             }
 
-            sections.get(currentSection).add(parseCard(line, cardsById));
+            sections.get(currentSection).add(parseCard(line));
         }
 
         return new AppState(
-                buildList(sections, "inventory", "inventory_removed", "inventory_added"),
-                buildList(sections, "wishlist", "wishlist_removed", "wishlist_added"));
+                buildList(sections, "inventory", "inventory_history"),
+                buildList(sections, "wishlist", "wishlist_history"));
     }
 
     public void save(AppState state) throws IOException {
@@ -74,11 +77,9 @@ public class Storage {
         ArrayList<String> lines = new ArrayList<>();
         lines.add(FILE_HEADER);
         appendSection(lines, "inventory", state.getInventory().getCards());
-        appendSection(lines, "inventory_removed", state.getInventory().getRemovedCards());
-        appendSection(lines, "inventory_added", state.getInventory().getAddedCards());
+        appendSection(lines, "inventory_history", state.getInventory().getHistory().getFlattenedCards());
         appendSection(lines, "wishlist", state.getWishlist().getCards());
-        appendSection(lines, "wishlist_removed", state.getWishlist().getRemovedCards());
-        appendSection(lines, "wishlist_added", state.getWishlist().getAddedCards());
+        appendSection(lines, "wishlist_history", state.getWishlist().getHistory().getFlattenedCards());
 
         Files.write(filePath, lines, StandardCharsets.UTF_8);
     }
@@ -89,13 +90,11 @@ public class Storage {
 
     private static CardsList buildList(Map<String, ArrayList<Card>> sections,
                                        String cardsSection,
-                                       String removedSection,
-                                       String addedSection) {
-        return new CardsList(
-                sections.getOrDefault(cardsSection, new ArrayList<>()),
-                sections.getOrDefault(removedSection, new ArrayList<>()),
-                sections.getOrDefault(addedSection, new ArrayList<>())
-        );
+                                       String historySection) {
+        ArrayList<Card> flattenedCards = sections.getOrDefault(historySection, new ArrayList<>());
+        CardsHistory history = new CardsHistory(flattenedCards);
+
+        return new CardsList(sections.getOrDefault(cardsSection, new ArrayList<>()), history);
     }
 
     private static void appendSection(ArrayList<String> lines, String name, ArrayList<Card> cards) {
@@ -107,18 +106,27 @@ public class Storage {
     }
 
     private static String serializeCard(Card card) {
+        if (card == null) {
+            return NULL_VALUE;
+        }
+
         return String.join("\t",
                 card.getUid().toString(),
                 Base64.getEncoder().encodeToString(card.getName().getBytes(StandardCharsets.UTF_8)),
                 String.valueOf(card.getQuantity()),
                 String.valueOf(card.getPrice()),
                 serializeInstant(card.getLastAdded()),
-                serializeInstant(card.getLastModified()));
+                serializeInstant(card.getLastModified()),
+                serializeInstant(card.getLastRemoved()));
     }
 
-    private static Card parseCard(String line, Map<UUID, Card> cardsById) throws IOException {
+    private static Card parseCard(String line) throws IOException {
+        if (line.equals(NULL_VALUE)) {
+            return null;
+        }
+
         String[] parts = line.split("\t", -1);
-        if (parts.length != 6) {
+        if (parts.length != 7) {
             throw new IOException("Malformed card record");
         }
 
@@ -129,26 +137,17 @@ public class Storage {
             float price = Float.parseFloat(parts[3]);
             Instant lastAdded = parseInstant(parts[4]);
             Instant lastModified = parseInstant(parts[5]);
+            Instant lastRemoved = parseInstant(parts[6]);
 
-            Card card = cardsById.get(uid);
-            if (card == null) {
-                card = new Card.Builder()
-                        .uid(uid)
-                        .name(name)
-                        .quantity(quantity)
-                        .price(price)
-                        .lastAdded(lastAdded)
-                        .lastModified(lastModified)
-                        .build();
-                cardsById.put(uid, card);
-            } else {
-                card.setName(name);
-                card.setQuantity(quantity);
-                card.setPrice(price);
-                card.setLastAdded(lastAdded);
-                card.setLastModified(lastModified);
-            }
-            return card;
+            return new Card.Builder()
+                    .uid(uid)
+                    .name(name)
+                    .quantity(quantity)
+                    .price(price)
+                    .lastAdded(lastAdded)
+                    .lastModified(lastModified)
+                    .lastRemoved(lastRemoved)
+                    .build();
         } catch (IllegalArgumentException e) {
             throw new IOException("Malformed card record", e);
         }

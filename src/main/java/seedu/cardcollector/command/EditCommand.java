@@ -23,8 +23,11 @@ public class EditCommand extends Command {
             return new CommandResult(false, false);
         }
 
-        inventory.editCard(targetIndex, newName, newQuantity, newPrice);
-        ui.printEdited(inventory, targetIndex);
+        if (inventory.editCard(targetIndex, newName, newQuantity, newPrice)) {
+            ui.printEdited(inventory, targetIndex);
+        } else {
+            ui.printNotEdited(inventory);
+        }
         return new CommandResult(false, true);
     }
 }

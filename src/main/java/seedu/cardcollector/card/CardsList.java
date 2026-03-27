@@ -1,27 +1,23 @@
-package seedu.cardcollector;
+package seedu.cardcollector.card;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class CardsList {
     private final ArrayList<Card> cards;
-    private final ArrayList<Card> removedCards;
-    private final ArrayList<Card> addedCards;
+    private CardsHistory history;
 
     public CardsList() {
         this.cards = new ArrayList<Card>();
-        this.removedCards = new ArrayList<Card>();
-        this.addedCards = new ArrayList<Card>();
+        this.history = new CardsHistory();
     }
 
-    public CardsList(ArrayList<Card> cards, ArrayList<Card> removedCards, ArrayList<Card> addedCards) {
+    public CardsList(ArrayList<Card> cards, CardsHistory history) {
         this.cards = new ArrayList<>(cards);
-        this.removedCards = new ArrayList<>(removedCards);
-        this.addedCards = new ArrayList<>(addedCards);
+        this.history = history;
     }
 
     public void addCard(Card newCard) {
@@ -37,9 +33,14 @@ public class CardsList {
         for (Card existingCard : cards) {
             if (existingCard.getName().equalsIgnoreCase(newCard.getName()) &&
                 existingCard.getPrice() == newCard.getPrice()){
+                Card originalCard = existingCard.copy();
+
                 int updatedQuantity = existingCard.getQuantity() + newCard.getQuantity();
                 existingCard.setQuantity(updatedQuantity);
-                existingCard.setLastModified(currentInstant);
+                existingCard.setLastAdded(currentInstant);
+
+                this.history.add(originalCard, existingCard.copy());
+
                 assert cards.contains(existingCard) : "Updated card must still be in the list";
                 return;
             }
@@ -47,9 +48,9 @@ public class CardsList {
         int sizeBefore = cards.size();
 
         newCard.setLastAdded(currentInstant);
-        newCard.setLastModified(currentInstant);
         cards.add(newCard);
-        addedCards.add(newCard);
+
+        this.history.add(null, newCard.copy());
 
         assert cards.size() == sizeBefore + 1 : "List size should increment by 1 after add";
         assert cards.get(cards.size() - 1).equals(newCard) : "Latest card should be at the end";
@@ -70,11 +71,11 @@ public class CardsList {
             Card removed = cards.remove(index);
 
             Instant currentInstant = Instant.now();
-            removed.setLastModified(currentInstant);
-            removedCards.add(removed);
+            removed.setLastRemoved(currentInstant);
+
+            this.history.add(removed.copy(),  null);
 
             assert cards.size() == sizeBefore - 1 : "Size should decrease after removal";
-            assert removedCards.contains(removed) : "Removed card must be tracked";
         }
     }
 
@@ -89,11 +90,11 @@ public class CardsList {
                 Card removed = cards.remove(i);
 
                 Instant currentInstant = Instant.now();
-                removed.setLastModified(currentInstant);
-                removedCards.add(removed);
+                removed.setLastRemoved(currentInstant);
+
+                this.history.add(removed.copy(),  null);
 
                 assert cards.size() == sizeBefore - 1 : "Size should decrease after removal";
-                assert removedCards.contains(removed) : "Removed card must be tracked";
 
                 return true;
             }
@@ -111,24 +112,8 @@ public class CardsList {
         return cards;
     }
 
-    public ArrayList<Card> getRemovedCards() {
-        return removedCards;
-    }
-
-    public ArrayList<Card> getAddedCards() {
-        return addedCards;
-    }
-
     public int getSize() {
         return cards.size();
-    }
-
-    public int getRemovedSize() {
-        return removedCards.size();
-    }
-
-    public int getAddedSize() {
-        return addedCards.size();
     }
 
     public void replaceWith(CardsList other) {
@@ -136,20 +121,14 @@ public class CardsList {
 
         cards.clear();
         cards.addAll(other.getCards());
-
-        removedCards.clear();
-        removedCards.addAll(other.getRemovedCards());
-
-        addedCards.clear();
-        addedCards.addAll(other.getAddedCards());
+        history = other.getHistory().copy();
     }
 
     public CardsList deepCopy() {
         Map<java.util.UUID, Card> copiedCards = new HashMap<>();
         return new CardsList(
                 copyCards(cards, copiedCards),
-                copyCards(removedCards, copiedCards),
-                copyCards(addedCards, copiedCards)
+                history.copy()
         );
     }
 
@@ -188,108 +167,63 @@ public class CardsList {
         return results;
     }
 
-    private static Comparator<Card> getSortComparator(CardSortCriteria criteria) {
-        switch (criteria) {
-        case NAME -> {
-            return Comparator.comparing(Card::getName);
-        }
-        case QUANTITY -> {
-            return Comparator.comparingInt(Card::getQuantity);
-        }
-        case PRICE -> {
-            return Comparator.comparingDouble(Card::getPrice);
-        }
-        case LAST_ADDED -> {
-            return Comparator.comparing(Card::getLastAdded,
-                    Comparator.nullsLast(Instant::compareTo));
-        }
-        case LAST_MODIFIED -> {
-            return Comparator.comparing(Card::getLastModified,
-                    Comparator.nullsLast(Instant::compareTo));
-        }
-        default -> {
-            assert false : "Invalid criteria";
-        }
-        }
-        return null;
-    }
-
-    private static ArrayList<Card> getSortedCardsFromList(
-            ArrayList<Card> cards,
-            CardSortCriteria criteria,
-            boolean isAscending,
-            int maxLimit,
-            int defaultMaxLimit) {
-
-        if (cards.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        Comparator<Card> comparator = getSortComparator(criteria);
-
-        assert comparator != null : "No available comparator for criteria";
-
-        // Apply ascending/descending order
-        if (!isAscending) {
-            comparator = comparator.reversed();
-        }
-
-        int recordsLimit = (maxLimit == -1) ? defaultMaxLimit :
-                Math.min(cards.size(), maxLimit);
-
-        return cards.stream()
-                .sorted(comparator)
-                .limit(recordsLimit)
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
     public ArrayList<Card> getSortedCards(
             CardSortCriteria criteria,
             boolean isAscending,
             int maxLimit,
             int defaultMaxLimit) {
-        return getSortedCardsFromList(cards, criteria, isAscending, maxLimit, defaultMaxLimit);
+        return CardSort.sortCards(cards, criteria, isAscending, maxLimit, defaultMaxLimit);
     }
 
-    public ArrayList<Card> getSortedAddedCards(
-            CardSortCriteria criteria,
-            boolean isAscending,
-            int maxLimit,
-            int defaultMaxLimit) {
-        return getSortedCardsFromList(addedCards, criteria, isAscending, maxLimit, defaultMaxLimit);
-    }
-
-    public ArrayList<Card> getSortedRemovedCards(
-            CardSortCriteria criteria,
-            boolean isAscending,
-            int maxLimit,
-            int defaultMaxLimit) {
-        return getSortedCardsFromList(removedCards, criteria, isAscending, maxLimit, defaultMaxLimit);
-    }
-
-    public void editCard(int index, String newName, Integer newQuantity, Float newPrice) {
+    public boolean editCard(int index, String newName, Integer newQuantity, Float newPrice) {
         assert index >= 0 && index < cards.size() : "Index should be validated before calling editCard";
 
         Card card = cards.get(index);
+
         Instant currentInstant = Instant.now();
-        boolean anyChange = false;
+        boolean quantityChanged = false;
 
-        if (newName != null && !newName.trim().isEmpty()) {
-            card.setName(newName.trim());
-            anyChange = true;
-        }
+        // Special handling for quantity
         if (newQuantity != null) {
-            card.setQuantity(newQuantity);
-            anyChange = true;
-        }
-        if (newPrice != null) {
-            card.setPrice(newPrice);
-            anyChange = true;
+            Card originalCard = card.copy();
+            int previousQuantity = originalCard.getQuantity();
+
+            if (newQuantity > previousQuantity) {
+                quantityChanged = true;
+                card.setQuantity(newQuantity);
+                card.setLastAdded(currentInstant);
+                history.add(originalCard, card.copy());
+            } else if (newQuantity < previousQuantity) {
+                quantityChanged = true;
+                card.setQuantity(newQuantity);
+                card.setLastRemoved(currentInstant);
+                history.add(originalCard, card.copy());
+            }
         }
 
-        if (anyChange) {
-            card.setLastModified(currentInstant);
+        // Normal handling for the rest of the fields
+        Card originalCard = card.copy();
+        boolean anyFieldChanged = false;
+
+        if (newName != null && !newName.isBlank()) {
+            String trimmedNewName = newName.trim();
+            if (!trimmedNewName.equals(card.getName())) {
+                card.setName(trimmedNewName);
+                anyFieldChanged = true;
+            }
         }
+
+        if (newPrice != null && newPrice != card.getPrice()) {
+            card.setPrice(newPrice);
+            anyFieldChanged = true;
+        }
+
+        if (anyFieldChanged) {
+            card.setLastModified(currentInstant);
+            history.add(originalCard, card.copy());
+        }
+
+        return quantityChanged || anyFieldChanged;
     }
 
     /**
@@ -304,7 +238,7 @@ public class CardsList {
             return;
         }
 
-        Comparator<Card> comparator = getSortComparator(criteria);
+        Comparator<Card> comparator = CardSort.getSortComparator(criteria);
         assert comparator != null : "No available comparator for criteria";
 
         if (!isAscending) {
@@ -314,5 +248,9 @@ public class CardsList {
         cards.sort(comparator);
 
         assert cards.size() > 0 : "List should not be empty if it wasn't before reorder";
+    }
+
+    public CardsHistory getHistory() {
+        return history;
     }
 }

@@ -1,6 +1,6 @@
 package seedu.cardcollector.command;
 
-import seedu.cardcollector.Card;
+import seedu.cardcollector.card.Card;
 
 import java.util.ArrayList;
 

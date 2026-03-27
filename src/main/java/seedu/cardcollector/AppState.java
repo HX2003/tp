@@ -1,5 +1,7 @@
 package seedu.cardcollector;
 
+import seedu.cardcollector.card.CardsList;
+
 public class AppState {
     private final CardsList inventory;
     private final CardsList wishlist;

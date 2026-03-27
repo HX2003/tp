@@ -1,4 +1,4 @@
-package seedu.cardcollector;
+package seedu.cardcollector.card;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -8,14 +8,18 @@ public class Card {
     private String name;
     private int quantity;
     private float price;
-    private Instant lastAdded = null;
-    private Instant lastModified = null;
+    private Instant lastAdded = null;    // lastAdded is a nullable type
+    private Instant lastModified = null; // lastModified is a nullable type
+    private Instant lastRemoved = null;  // lastRemoved is a nullable type
 
     private Card (Builder builder) {
         this.uid = builder.uid;
         this.name = builder.name;
         this.quantity = builder.quantity;
         this.price = builder.price;
+        this.lastAdded = builder.lastAdded;
+        this.lastModified = builder.lastModified;
+        this.lastRemoved = builder.lastRemoved;
     }
 
     public static class Builder {
@@ -25,6 +29,7 @@ public class Card {
         private Float price;
         private Instant lastAdded;
         private Instant lastModified;
+        private Instant lastRemoved;
 
         public Builder uid(UUID uid) {
             this.uid = uid;
@@ -56,6 +61,11 @@ public class Card {
             return this;
         }
 
+        public Builder lastRemoved(Instant lastRemoved) {
+            this.lastRemoved = lastRemoved;
+            return this;
+        }
+
         public Card build() {
             // When no uid is specified, a random one is generated.
             if (uid == null) {
@@ -66,10 +76,8 @@ public class Card {
             assert price != null;
             assert quantity != null;
             assert quantity >= 0 : "Quantity cannot be negative";
-            Card card = new Card(this);
-            card.setLastAdded(lastAdded);
-            card.setLastModified(lastModified);
-            return card;
+
+            return new Card(this);
         }
     }
 
@@ -117,6 +125,15 @@ public class Card {
         this.lastModified = lastModified;
     }
 
+    public Instant getLastRemoved() {
+        return lastRemoved;
+    }
+
+    public void setLastRemoved(Instant lastRemoved) {
+        this.lastRemoved = lastRemoved;
+    }
+
+
     public Card copy() {
         return new Card.Builder()
                 .uid(uid)
@@ -125,6 +142,7 @@ public class Card {
                 .price(price)
                 .lastAdded(lastAdded)
                 .lastModified(lastModified)
+                .lastRemoved(lastRemoved)
                 .build();
     }
 
