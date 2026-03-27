@@ -90,7 +90,7 @@ public class ParserTest {
     }
 
     @Test
-    public void parse_transferCommands_success() throws Exception {
+    public void parse_transferCommands_success() {
         Parser parser = new Parser();
 
         Command downloadCommand = parser.parse("download /f backups/cards.txt");
@@ -104,7 +104,7 @@ public class ParserTest {
     }
 
     @Test
-    public void parse_transferCommands_missingPath_exceptionThrown() {
+    public void parse_transferInvalidPath() {
         Parser parser = new Parser();
 
         assertThrows(

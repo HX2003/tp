@@ -18,6 +18,10 @@ Adds a new card to the current list.
 
 **Format:** `add /n NAME /q QUANTITY /p PRICE`
 
+- `NAME` can contain spaces.
+- `QUANTITY` must be an integer greater than or equal to 0.
+- `PRICE` must be a valid number.
+
 **Example:** `add /n Pikachu VMAX /q 2 /p 25.50`
 
 ### Editing a card: `edit`

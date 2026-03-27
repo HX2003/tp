@@ -54,7 +54,8 @@ public class CardCollector {
             try {
                 Command command = parser.parse(parseInput);
                 CardsList targetList = isWishlistCommand ? wishlist : inventory;
-                CommandContext context = new CommandContext(ui, targetList, inventory, wishlist, storage, uploadUndoState);
+                CommandContext context = new CommandContext(
+                        ui, targetList, inventory, wishlist, storage, uploadUndoState);
                 CommandResult result = command.execute(context);
                 if (result.shouldSave()) {
                     saveState();

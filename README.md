@@ -36,6 +36,7 @@ You can also export and import full app data manually:
 ## Commands
 
 - `add /n NAME /q QTY /p PRICE`
+  `NAME` can contain spaces, `QTY` must be an integer greater than or equal to 0, and `PRICE` must be a valid number.
 - `edit INDEX [/n NAME] [/q QTY] [/p PRICE]`
 - `list`
 - `find [/n NAME] [/p PRICE] [/q QUANTITY]`
