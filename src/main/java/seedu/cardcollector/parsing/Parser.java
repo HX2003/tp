@@ -5,19 +5,20 @@ import seedu.cardcollector.card.CardHistoryType;
 import seedu.cardcollector.command.AddCommand;
 import seedu.cardcollector.command.AcquiredCommand;
 import seedu.cardcollector.command.Command;
-import seedu.cardcollector.command.EditCommand;
 import seedu.cardcollector.command.CompareCommand;
 import seedu.cardcollector.command.DownloadCommand;
+import seedu.cardcollector.command.EditCommand;
 import seedu.cardcollector.command.ExitCommand;
 import seedu.cardcollector.command.FindCommand;
 import seedu.cardcollector.command.HistoryCommand;
 import seedu.cardcollector.command.ListCommand;
 import seedu.cardcollector.command.RemoveCardByIndexCommand;
 import seedu.cardcollector.command.RemoveCardByNameCommand;
+import seedu.cardcollector.command.ReorderCommand;
+import seedu.cardcollector.command.UndoCommand;
 import seedu.cardcollector.command.UndoUploadCommand;
 import seedu.cardcollector.command.UploadCommand;
 import seedu.cardcollector.card.CardSortCriteria;
-import seedu.cardcollector.command.ReorderCommand;
 import seedu.cardcollector.exception.ParseBlankCommandException;
 import seedu.cardcollector.exception.ParseInvalidArgumentException;
 import seedu.cardcollector.exception.ParseUnknownCommandException;
@@ -40,6 +41,7 @@ public class Parser {
     private static final String KEYWORD_UPLOAD_COMMAND = "upload";
     private static final String KEYWORD_UNDO_UPLOAD_COMMAND = "undoupload";
     private static final String KEYWORD_REORDER_COMMAND = "reorder";
+    private static final String KEYWORD_UNDO_COMMAND = "undo";
 
     private static final String[] USAGE_REORDER_COMMAND = {
         "reorder CRITERIA [asc|desc]",
@@ -109,6 +111,8 @@ public class Parser {
             return handleAcquired(arguments);
         case KEYWORD_REORDER_COMMAND:
             return handleReorder(arguments);
+        case KEYWORD_UNDO_COMMAND:
+            return handleUndo(arguments);
         default:
             throw new ParseUnknownCommandException(commandKeyword);
         }
@@ -545,5 +549,15 @@ public class Parser {
         }
 
         return new ReorderCommand(criteria, isAscending);
+    }
+
+    private Command handleUndo(String arguments) throws ParseInvalidArgumentException {
+        if (!arguments.isBlank()) {
+            throw new ParseInvalidArgumentException(
+                    "undo does not take any arguments",
+                    new String[]{"undo"}
+            );
+        }
+        return new UndoCommand();
     }
 }

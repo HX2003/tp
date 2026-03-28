@@ -20,8 +20,6 @@ public class CardHistoryEntry {
         } else if (changedQuantity < 0) {
             this.cardHistoryType = CardHistoryType.REMOVED;
         } else {
-            System.out.println(previous.getQuantity());
-            System.out.println(getChangedQuantity());
             this.cardHistoryType = CardHistoryType.MODIFIED;
         }
     }

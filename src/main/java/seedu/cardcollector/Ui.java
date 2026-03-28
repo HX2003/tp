@@ -191,6 +191,12 @@ public class Ui {
         printBorder();
     }
 
+    public void printUndoSuccess(CardsList list) {
+        printBorder();
+        System.out.println("Undo Successful!");
+        printList(list);
+    }
+
     public void printDownloadSuccess(Path path) {
         printBorder();
         System.out.println("Saved current CardCollector data to: " + path);
@@ -337,5 +343,6 @@ public class Ui {
 
         System.out.printf(FORMAT_HISTORY_REMOVED_RECORD, date, removedQuantity, mostRecent);
     }
+
 }
 

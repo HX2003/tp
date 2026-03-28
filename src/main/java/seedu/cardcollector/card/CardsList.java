@@ -56,6 +56,14 @@ public class CardsList {
         assert cards.get(cards.size() - 1).equals(newCard) : "Latest card should be at the end";
     }
 
+    public void addCardAtIndex(int index, Card card) {
+        assert card != null : "Card to re-insert should not be null";
+        assert index >= 0 && index <= cards.size() : "Index out of bounds for re-insertion";
+
+        cards.add(index, card);
+        this.history.add(null, card.copy());
+    }
+
     public void removeCardByIndex(int index) {
         assert cards != null : "Cards list should be initialized";
 

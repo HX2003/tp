@@ -1,6 +1,7 @@
 package seedu.cardcollector;
 
 import java.io.IOException;
+import java.util.Stack;
 
 import seedu.cardcollector.card.CardsList;
 import seedu.cardcollector.command.Command;
@@ -18,12 +19,14 @@ public class CardCollector {
     private final Parser parser;
     private final Storage storage;
     private final UploadUndoState uploadUndoState;
+    private final Stack<Command> commandHistory;
 
     public CardCollector() {
         ui = new Ui();
         parser = new Parser();
         storage = Storage.createDefault();
         uploadUndoState = new UploadUndoState();
+        commandHistory = new Stack<>();
 
         AppState initialState = loadState();
         inventory = initialState.getInventory();
@@ -50,14 +53,20 @@ public class CardCollector {
                 if (isWishlistCommand) {
                     ui.printUnknownCommandWarning("wishlist");
                 }
+                continue;
             }
 
             try {
                 Command command = parser.parse(parseInput);
                 CardsList targetList = isWishlistCommand ? wishlist : inventory;
                 CommandContext context = new CommandContext(
-                        ui, targetList, inventory, wishlist, storage, uploadUndoState);
+                        ui, targetList, inventory, wishlist, storage, uploadUndoState, commandHistory);
+
                 CommandResult result = command.execute(context);
+
+                if (command.isReversible()) {
+                    context.getCommandHistory().push(command);
+                }
                 if (result.shouldSave()) {
                     saveState();
                 }
