@@ -4,7 +4,6 @@ import seedu.cardcollector.card.CardsList;
 import seedu.cardcollector.Storage;
 import seedu.cardcollector.Ui;
 import seedu.cardcollector.UploadUndoState;
-import seedu.cardcollector.command.Command;
 import java.util.Stack;
 
 public class CommandContext {

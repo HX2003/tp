@@ -12,7 +12,11 @@ import org.junit.jupiter.api.io.TempDir;
 
 import seedu.cardcollector.card.Card;
 import seedu.cardcollector.card.CardsList;
-import seedu.cardcollector.command.*;
+import seedu.cardcollector.command.Command;
+import seedu.cardcollector.command.CommandContext;
+import seedu.cardcollector.command.UploadCommand;
+import seedu.cardcollector.command.DownloadCommand;
+import seedu.cardcollector.command.UndoUploadCommand;
 
 public class StorageTest {
     @TempDir
