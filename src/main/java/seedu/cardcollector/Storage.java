@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class Storage {
+    private static final String FILE_HEADER_V4 = "CARDCOLLECTOR_STORAGE_V4";
     private static final String FILE_HEADER_V3 = "CARDCOLLECTOR_STORAGE_V3";
     private static final String FILE_HEADER_V2 = "CARDCOLLECTOR_STORAGE_V2";
     private static final String NULL_VALUE = "-";
@@ -76,7 +77,7 @@ public class Storage {
         }
 
         ArrayList<String> lines = new ArrayList<>();
-        lines.add(FILE_HEADER_V3);
+        lines.add(FILE_HEADER_V4);
         appendSection(lines, "inventory", state.getInventory().getCards());
         appendSection(lines, "inventory_history", state.getInventory().getHistory().getFlattenedCards());
         appendSection(lines, "wishlist", state.getWishlist().getCards());
@@ -121,6 +122,7 @@ public class Storage {
                 serializeText(card.getCondition()),
                 serializeText(card.getLanguage()),
                 serializeText(card.getCardNumber()),
+                serializeTags(card.getTags()),
                 serializeInstant(card.getLastAdded()),
                 serializeInstant(card.getLastModified()),
                 serializeInstant(card.getLastRemoved()));
@@ -132,7 +134,7 @@ public class Storage {
         }
 
         String[] parts = line.split("\t", -1);
-        if (parts.length != 7 && parts.length != 12) {
+        if (parts.length != 7 && parts.length != 12 && parts.length != 13) {
             throw new IOException("Malformed card record");
         }
 
@@ -141,12 +143,15 @@ public class Storage {
             String name = new String(Base64.getDecoder().decode(parts[1]), StandardCharsets.UTF_8);
             int quantity = Integer.parseInt(parts[2]);
             float price = Float.parseFloat(parts[3]);
-            String cardSet = parts.length == 12 ? parseText(parts[4]) : null;
-            String rarity = parts.length == 12 ? parseText(parts[5]) : null;
-            String condition = parts.length == 12 ? parseText(parts[6]) : null;
-            String language = parts.length == 12 ? parseText(parts[7]) : null;
-            String cardNumber = parts.length == 12 ? parseText(parts[8]) : null;
-            int instantStartIndex = parts.length == 12 ? 9 : 4;
+            String cardSet = parts.length >= 12 ? parseText(parts[4]) : null;
+            String rarity = parts.length >= 12 ? parseText(parts[5]) : null;
+            String condition = parts.length >= 12 ? parseText(parts[6]) : null;
+            String language = parts.length >= 12 ? parseText(parts[7]) : null;
+            String cardNumber = parts.length >= 12 ? parseText(parts[8]) : null;
+            java.util.LinkedHashSet<String> tags = parts.length == 13
+                    ? parseTags(parts[9])
+                    : new java.util.LinkedHashSet<>();
+            int instantStartIndex = parts.length == 13 ? 10 : (parts.length == 12 ? 9 : 4);
             Instant lastAdded = parseInstant(parts[instantStartIndex]);
             Instant lastModified = parseInstant(parts[instantStartIndex + 1]);
             Instant lastRemoved = parseInstant(parts[instantStartIndex + 2]);
@@ -161,6 +166,7 @@ public class Storage {
                     .condition(condition)
                     .language(language)
                     .cardNumber(cardNumber)
+                    .tags(tags)
                     .lastAdded(lastAdded)
                     .lastModified(lastModified)
                     .lastRemoved(lastRemoved)
@@ -192,7 +198,30 @@ public class Storage {
         return new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8);
     }
 
+    private static String serializeTags(java.util.Collection<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return NULL_VALUE;
+        }
+
+        return Base64.getEncoder().encodeToString(String.join("\n", tags).getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static java.util.LinkedHashSet<String> parseTags(String value) {
+        java.util.LinkedHashSet<String> tags = new java.util.LinkedHashSet<>();
+        if (NULL_VALUE.equals(value)) {
+            return tags;
+        }
+
+        String decoded = new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8);
+        for (String tag : decoded.split("\n")) {
+            if (!tag.isBlank()) {
+                tags.add(tag);
+            }
+        }
+        return tags;
+    }
+
     private static boolean isSupportedHeader(String header) {
-        return FILE_HEADER_V2.equals(header) || FILE_HEADER_V3.equals(header);
+        return FILE_HEADER_V2.equals(header) || FILE_HEADER_V3.equals(header) || FILE_HEADER_V4.equals(header);
     }
 }

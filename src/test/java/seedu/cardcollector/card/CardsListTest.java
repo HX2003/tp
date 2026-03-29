@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CardsListTest {
 
@@ -45,7 +47,7 @@ public class CardsListTest {
                 .build());
 
         // Case-insensitive and partial match for "pika"
-        ArrayList<Card> results = cardsList.findCards("pika", null, null, null, null, null, null, null);
+        ArrayList<Card> results = cardsList.findCards("pika", null, null, null, null, null, null, null, null);
         
         assertEquals(2, results.size());
         assertEquals("Pikachu", results.get(0).getName());
@@ -68,7 +70,7 @@ public class CardsListTest {
                 .build());
 
         // Exact price match
-        ArrayList<Card> results = cardsList.findCards(null, 10.00f, null, null, null, null, null, null);
+        ArrayList<Card> results = cardsList.findCards(null, 10.00f, null, null, null, null, null, null, null);
         
         assertEquals(1, results.size());
         assertEquals("Charizard", results.get(0).getName());
@@ -90,7 +92,7 @@ public class CardsListTest {
                 .build());
 
         // Exact quantity match
-        ArrayList<Card> results = cardsList.findCards(null, null, 5, null, null, null, null, null);
+        ArrayList<Card> results = cardsList.findCards(null, null, 5, null, null, null, null, null, null);
         
         assertEquals(1, results.size());
         assertEquals("Bulbasaur", results.get(0).getName());
@@ -117,7 +119,7 @@ public class CardsListTest {
                 .build());
 
         // Matches both Name (contains "Mew") AND Quantity (exactly 3)
-        ArrayList<Card> results = cardsList.findCards("Mew", null, 3, null, null, null, null, null);
+        ArrayList<Card> results = cardsList.findCards("Mew", null, 3, null, null, null, null, null, null);
         
         assertEquals(2, results.size());
         assertEquals(20.00f, results.get(0).getPrice());
@@ -135,7 +137,7 @@ public class CardsListTest {
                 .build());
 
         // Searching for attributes that don't exist
-        ArrayList<Card> results = cardsList.findCards("Snorlax", 100.00f, null, null, null, null, null, null);
+        ArrayList<Card> results = cardsList.findCards("Snorlax", 100.00f, null, null, null, null, null, null, null);
         
         assertEquals(0, results.size());
     }
@@ -190,10 +192,37 @@ public class CardsListTest {
                 .build());
 
         ArrayList<Card> results = cardsList.findCards(
-                null, null, null, "base", "rare", "near", "english", "58/102");
+                null, null, null, "base", "rare", "near", "english", "58/102", null);
 
         assertEquals(1, results.size());
         assertEquals("Base Set", results.get(0).getCardSet());
+    }
+
+    @Test
+    public void addTagRemoveTagAndFindByTag_success() {
+        CardsList cardsList = new CardsList();
+        cardsList.addCard(new Card.Builder()
+                .name("Pikachu")
+                .price(5.50f)
+                .quantity(1)
+                .build());
+        cardsList.addCard(new Card.Builder()
+                .name("Charizard")
+                .price(99.99f)
+                .quantity(1)
+                .build());
+
+        assertTrue(cardsList.addTag(0, "deck"));
+        assertFalse(cardsList.addTag(0, "deck"));
+        assertTrue(cardsList.getCard(0).hasTag("DECK"));
+
+        ArrayList<Card> taggedResults = cardsList.findCards(
+                null, null, null, null, null, null, null, null, "deck");
+        assertEquals(1, taggedResults.size());
+        assertEquals("Pikachu", taggedResults.get(0).getName());
+
+        assertTrue(cardsList.removeTag(0, "deck"));
+        assertFalse(cardsList.getCard(0).hasTag("deck"));
     }
 
     @Test

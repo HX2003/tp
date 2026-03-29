@@ -15,6 +15,7 @@ import seedu.cardcollector.command.ListCommand;
 import seedu.cardcollector.command.RemoveCardByIndexCommand;
 import seedu.cardcollector.command.RemoveCardByNameCommand;
 import seedu.cardcollector.command.ReorderCommand;
+import seedu.cardcollector.command.TagCommand;
 import seedu.cardcollector.command.UndoCommand;
 import seedu.cardcollector.command.UndoUploadCommand;
 import seedu.cardcollector.command.UploadCommand;
@@ -35,8 +36,10 @@ public class Parser {
     private static final String FLAG_LANGUAGE = "/l";
     private static final String FLAG_CARD_NUMBER = "/no";
     private static final String FLAG_ID = "/id";
+    private static final String FLAG_TAG = "/t";
     private static final String[] CARD_FIELD_FLAGS = {
-        FLAG_NAME, FLAG_QUANTITY, FLAG_PRICE, FLAG_SET, FLAG_RARITY, FLAG_CONDITION, FLAG_LANGUAGE, FLAG_CARD_NUMBER
+        FLAG_NAME, FLAG_QUANTITY, FLAG_PRICE, FLAG_SET, FLAG_RARITY, FLAG_CONDITION, FLAG_LANGUAGE, FLAG_CARD_NUMBER,
+        FLAG_TAG
     };
     private static final String[] ADD_FIELD_FLAGS = {
         FLAG_NAME, FLAG_QUANTITY, FLAG_PRICE, FLAG_SET, FLAG_RARITY, FLAG_CONDITION, FLAG_LANGUAGE, FLAG_CARD_NUMBER,
@@ -58,6 +61,8 @@ public class Parser {
     private static final String KEYWORD_UNDO_UPLOAD_COMMAND = "undoupload";
     private static final String KEYWORD_REORDER_COMMAND = "reorder";
     private static final String KEYWORD_UNDO_COMMAND = "undo";
+    private static final String KEYWORD_TAG_COMMAND = "tag";
+    private static final String KEYWORD_FOLDER_COMMAND = "folder";
 
     private static final String[] USAGE_REORDER_COMMAND = {
         "reorder CRITERIA [asc|desc]",
@@ -72,17 +77,26 @@ public class Parser {
     };
 
     private static final String[] USAGE_FIND_COMMAND = {
-        "find [/n NAME] [/p PRICE] [/q QUANTITY] [/s SET] [/r RARITY] [/c CONDITION] [/l LANGUAGE] [/no CARD_NUMBER]",
+        "find [/n NAME] [/p PRICE] [/q QUANTITY] [/s SET] [/r RARITY] [/c CONDITION] [/l LANGUAGE] "
+                + "[/no CARD_NUMBER] [/t TAG]",
         "find /n Pikachu",
         "find /p 12.5",
         "find /n Pikachu /q 3",
-        "find /s Base Set /r Rare"
+        "find /s Base Set /r Rare",
+        "find /t trade"
     };
 
     private static final String[] USAGE_ADD_COMMAND = {
         "add /n NAME /q QTY /p PRICE [/s SET] [/r RARITY] [/c CONDITION] [/l LANGUAGE] [/no CARD_NUMBER]",
         "add /n Pikachu /q 1 /p 5.5",
         "add /n Charizard /q 1 /p 99.99 /s Base Set /r Holo /c Near Mint /l English /no 4/102"
+    };
+
+    private static final String[] USAGE_TAG_COMMAND = {
+        "tag add INDEX /t TAG",
+        "tag remove INDEX /t TAG",
+        "tag add 3 /t deck",
+        "folder remove 2 /t trade"
     };
 
     private static final String[] USAGE_EDIT_COMMAND = {
@@ -142,6 +156,9 @@ public class Parser {
             return handleReorder(arguments);
         case KEYWORD_UNDO_COMMAND:
             return handleUndo(arguments);
+        case KEYWORD_TAG_COMMAND:
+        case KEYWORD_FOLDER_COMMAND:
+            return handleTag(arguments);
         default:
             throw new ParseUnknownCommandException(commandKeyword);
         }
@@ -224,6 +241,7 @@ public class Parser {
         String condition = null;
         String language = null;
         String cardNumber = null;
+        String tag = null;
 
         try {
             name = optionalTextFlag(arguments, FLAG_NAME, CARD_FIELD_FLAGS);
@@ -240,6 +258,7 @@ public class Parser {
             condition = optionalTextFlag(arguments, FLAG_CONDITION, CARD_FIELD_FLAGS);
             language = optionalTextFlag(arguments, FLAG_LANGUAGE, CARD_FIELD_FLAGS);
             cardNumber = optionalTextFlag(arguments, FLAG_CARD_NUMBER, CARD_FIELD_FLAGS);
+            tag = optionalTextFlag(arguments, FLAG_TAG, CARD_FIELD_FLAGS);
         } catch (NumberFormatException e) {
             throw new ParseInvalidArgumentException(
                     "Invalid number format for price or quantity",
@@ -254,24 +273,38 @@ public class Parser {
 
         if (name == null && price == null && quantity == null
                 && cardSet == null && rarity == null && condition == null
-                && language == null && cardNumber == null) {
+                && language == null && cardNumber == null && tag == null) {
             throw new ParseInvalidArgumentException(
                     "At least one search field must be provided",
                     USAGE_FIND_COMMAND
             );
         }
 
-        return new FindCommand(name, price, quantity, cardSet, rarity, condition, language, cardNumber);
+        return new FindCommand(name, price, quantity, cardSet, rarity, condition, language, cardNumber, tag);
     }
 
     private Command handleList(String arguments) throws ParseInvalidArgumentException {
-        if (!arguments.isBlank()) {
+        if (arguments.isBlank()) {
+            return new ListCommand();
+        }
+
+        String tag;
+        try {
+            tag = optionalTextFlag(arguments, FLAG_TAG, new String[] {FLAG_TAG});
+        } catch (Exception e) {
             throw new ParseInvalidArgumentException(
-                    "list does not take any arguments",
-                    new String[] {"list"}
+                    "Invalid list format",
+                    new String[] {"list", "list /t sealed"}
             );
         }
-        return new ListCommand();
+
+        if (tag == null) {
+            throw new ParseInvalidArgumentException(
+                    "list only supports optional /t TAG filtering",
+                    new String[] {"list", "list /t sealed"}
+            );
+        }
+        return new ListCommand(tag);
     }
 
     private Command handleExit(String arguments) throws ParseInvalidArgumentException {
@@ -495,6 +528,45 @@ public class Parser {
         }
 
         return new EditCommand(index, name, quantity, price, cardSet, rarity, condition, language, cardNumber);
+    }
+
+    private Command handleTag(String arguments) throws ParseInvalidArgumentException {
+        if (arguments.isBlank()) {
+            throw new ParseInvalidArgumentException("Missing tag action", USAGE_TAG_COMMAND);
+        }
+
+        String[] parts = arguments.trim().split(REGEX_WHITESPACES, 2);
+        if (parts.length < 2) {
+            throw new ParseInvalidArgumentException("Missing tag target", USAGE_TAG_COMMAND);
+        }
+
+        TagCommand.Operation operation;
+        if ("add".startsWith(parts[0].toLowerCase())) {
+            operation = TagCommand.Operation.ADD;
+        } else if ("remove".startsWith(parts[0].toLowerCase())) {
+            operation = TagCommand.Operation.REMOVE;
+        } else {
+            throw new ParseInvalidArgumentException("Unknown tag action", USAGE_TAG_COMMAND);
+        }
+
+        String targetArgs = parts[1].trim();
+        int tagFlagIndex = indexOfFlag(targetArgs, FLAG_TAG);
+        if (tagFlagIndex < 0) {
+            throw new ParseInvalidArgumentException("Tag must be provided with /t", USAGE_TAG_COMMAND);
+        }
+
+        String indexText = targetArgs.substring(0, tagFlagIndex).trim();
+        if (indexText.isBlank()) {
+            throw new ParseInvalidArgumentException("Index must be provided", USAGE_TAG_COMMAND);
+        }
+
+        try {
+            int index = Integer.parseInt(indexText) - 1;
+            String tag = requireTextFlag(targetArgs, FLAG_TAG, new String[] {FLAG_TAG});
+            return new TagCommand(operation, index, tag);
+        } catch (NumberFormatException e) {
+            throw new ParseInvalidArgumentException("Index must be a valid integer", USAGE_TAG_COMMAND);
+        }
     }
 
     private static String requireTextFlag(String input, String flag, String[] knownFlags) {

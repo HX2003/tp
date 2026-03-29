@@ -8,8 +8,11 @@ import seedu.cardcollector.command.RemoveCardByNameCommand;
 import seedu.cardcollector.command.HistoryCommand;
 import seedu.cardcollector.command.Command;
 import seedu.cardcollector.command.DownloadCommand;
+import seedu.cardcollector.command.FindCommand;
 import seedu.cardcollector.command.UploadCommand;
 import seedu.cardcollector.command.UndoUploadCommand;
+import seedu.cardcollector.command.ListCommand;
+import seedu.cardcollector.command.TagCommand;
 import seedu.cardcollector.exception.ParseBlankCommandException;
 import seedu.cardcollector.exception.ParseInvalidArgumentException;
 import seedu.cardcollector.exception.ParseUnknownCommandException;
@@ -240,6 +243,30 @@ public class ParserTest {
         assertThrows(
                 ParseInvalidArgumentException.class,
                 () -> parser.parse("undoupload now")
+        );
+    }
+
+    @Test
+    public void parse_tagAndTagFilterCommands_success() throws Exception {
+        assertInstanceOf(FindCommand.class, parser.parse("find /t trade"));
+        assertInstanceOf(ListCommand.class, parser.parse("list /t sealed"));
+        assertInstanceOf(TagCommand.class, parser.parse("tag add 3 /t deck"));
+        assertInstanceOf(TagCommand.class, parser.parse("folder remove 2 /t trade"));
+    }
+
+    @Test
+    public void parse_invalidTagCommands_exceptionThrown() {
+        assertThrows(
+                ParseInvalidArgumentException.class,
+                () -> parser.parse("tag add /t deck")
+        );
+        assertThrows(
+                ParseInvalidArgumentException.class,
+                () -> parser.parse("tag move 1 /t deck")
+        );
+        assertThrows(
+                ParseInvalidArgumentException.class,
+                () -> parser.parse("list sealed")
         );
     }
 

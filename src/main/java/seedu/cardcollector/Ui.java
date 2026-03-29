@@ -191,6 +191,45 @@ public class Ui {
         printBorder();
     }
 
+    public void printTaggedList(ArrayList<Card> results, String tag) {
+        assert results != null : "Results list passed to Ui should not be null";
+
+        printBorder();
+        if (results.isEmpty()) {
+            System.out.println("No cards found with tag \"" + tag + "\".");
+        } else {
+            System.out.println("Here are the cards tagged \"" + tag + "\"!");
+            for (int i = 0; i < results.size(); i++) {
+                System.out.println((i + 1) + ". " + results.get(i));
+            }
+        }
+        printBorder();
+    }
+
+    public void printTagUpdated(CardsList list, int index, String tag, String action) {
+        printBorder();
+        System.out.println("I have " + toPastTense(action) + " tag \"" + tag + "\" for card " + (index + 1) + "!");
+        System.out.println(list.getCard(index));
+        printBorder();
+    }
+
+    public void printTagNoChange(Card card, String tag, String action) {
+        printBorder();
+        System.out.println("No tag change: \"" + tag + "\" was not " + toPastTense(action) + ".");
+        System.out.println(card);
+        printBorder();
+    }
+
+    private static String toPastTense(String action) {
+        if ("remove".equals(action)) {
+            return "removed";
+        }
+        if ("add".equals(action)) {
+            return "added";
+        }
+        return action;
+    }
+
     public void printUndoSuccess(CardsList list) {
         printBorder();
         System.out.println("Undo Successful!");
@@ -345,4 +384,3 @@ public class Ui {
     }
 
 }
-

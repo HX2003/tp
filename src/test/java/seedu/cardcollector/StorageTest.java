@@ -35,6 +35,8 @@ public class StorageTest {
                 .condition("Near Mint")
                 .language("English")
                 .cardNumber("58/102")
+                .addTag("deck")
+                .addTag("trade")
                 .build();
         inventory.addCard(activeCard);
         activeCard.setLastAdded(Instant.parse("2026-03-26T09:00:00Z"));
@@ -75,6 +77,8 @@ public class StorageTest {
         assertEquals("Pikachu", loadedActiveCard.getName());
         assertEquals("Base Set", loadedActiveCard.getCardSet());
         assertEquals("58/102", loadedActiveCard.getCardNumber());
+        assertEquals(true, loadedActiveCard.hasTag("deck"));
+        assertEquals(true, loadedActiveCard.hasTag("trade"));
         assertEquals(Instant.parse("2026-03-26T09:00:00Z"), loadedActiveCard.getLastAdded());
         assertNotNull(loadedWishlist.getCard(0).getLastAdded());
     }

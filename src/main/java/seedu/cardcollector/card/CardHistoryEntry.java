@@ -1,6 +1,8 @@
 package seedu.cardcollector.card;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.StringJoiner;
 
 public class CardHistoryEntry {
     private final CardHistoryType cardHistoryType;
@@ -103,6 +105,7 @@ public class CardHistoryEntry {
         addTextChange(changedFields, "condition", previous.getCondition(), current.getCondition());
         addTextChange(changedFields, "language", previous.getLanguage(), current.getLanguage());
         addTextChange(changedFields, "card number", previous.getCardNumber(), current.getCardNumber());
+        addTextChange(changedFields, "tags", formatTags(previous.getTags()), formatTags(current.getTags()));
 
         return changedFields;
     }
@@ -118,5 +121,17 @@ public class CardHistoryEntry {
 
     private static String displayValue(String value) {
         return value == null || value.isBlank() ? "-" : value;
+    }
+
+    private static String formatTags(Collection<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return null;
+        }
+
+        StringJoiner joiner = new StringJoiner(", ");
+        for (String tag : tags) {
+            joiner.add(tag);
+        }
+        return joiner.toString();
     }
 }
