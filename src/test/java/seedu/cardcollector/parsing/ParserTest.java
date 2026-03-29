@@ -3,6 +3,7 @@ package seedu.cardcollector.parsing;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import seedu.cardcollector.command.AddCommand;
+import seedu.cardcollector.command.AnalyticsCommand;
 import seedu.cardcollector.command.RemoveCardByIndexCommand;
 import seedu.cardcollector.command.RemoveCardByNameCommand;
 import seedu.cardcollector.command.HistoryCommand;
@@ -252,6 +253,8 @@ public class ParserTest {
         assertInstanceOf(ListCommand.class, parser.parse("list /t sealed"));
         assertInstanceOf(TagCommand.class, parser.parse("tag add 3 /t deck"));
         assertInstanceOf(TagCommand.class, parser.parse("folder remove 2 /t trade"));
+        assertInstanceOf(AnalyticsCommand.class, parser.parse("analytics"));
+        assertInstanceOf(AnalyticsCommand.class, parser.parse("stats"));
     }
 
     @Test
@@ -267,6 +270,14 @@ public class ParserTest {
         assertThrows(
                 ParseInvalidArgumentException.class,
                 () -> parser.parse("list sealed")
+        );
+        assertThrows(
+                ParseInvalidArgumentException.class,
+                () -> parser.parse("analytics now")
+        );
+        assertThrows(
+                ParseInvalidArgumentException.class,
+                () -> parser.parse("stats now")
         );
     }
 

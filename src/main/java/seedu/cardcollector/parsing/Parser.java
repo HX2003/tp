@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import seedu.cardcollector.card.CardHistoryType;
 import seedu.cardcollector.command.AddCommand;
 import seedu.cardcollector.command.AcquiredCommand;
+import seedu.cardcollector.command.AnalyticsCommand;
 import seedu.cardcollector.command.Command;
 import seedu.cardcollector.command.CompareCommand;
 import seedu.cardcollector.command.DownloadCommand;
@@ -63,6 +64,8 @@ public class Parser {
     private static final String KEYWORD_UNDO_COMMAND = "undo";
     private static final String KEYWORD_TAG_COMMAND = "tag";
     private static final String KEYWORD_FOLDER_COMMAND = "folder";
+    private static final String KEYWORD_ANALYTICS_COMMAND = "analytics";
+    private static final String KEYWORD_STATS_COMMAND = "stats";
 
     private static final String[] USAGE_REORDER_COMMAND = {
         "reorder CRITERIA [asc|desc]",
@@ -159,9 +162,22 @@ public class Parser {
         case KEYWORD_TAG_COMMAND:
         case KEYWORD_FOLDER_COMMAND:
             return handleTag(arguments);
+        case KEYWORD_ANALYTICS_COMMAND:
+        case KEYWORD_STATS_COMMAND:
+            return handleAnalytics(arguments);
         default:
             throw new ParseUnknownCommandException(commandKeyword);
         }
+    }
+
+    private Command handleAnalytics(String arguments) throws ParseInvalidArgumentException {
+        if (!arguments.isBlank()) {
+            throw new ParseInvalidArgumentException(
+                    "analytics does not take any arguments",
+                    new String[] {"analytics", "stats", "wishlist analytics"}
+            );
+        }
+        return new AnalyticsCommand();
     }
 
     private Command handleAdd(String args) throws ParseInvalidArgumentException {

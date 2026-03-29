@@ -344,6 +344,68 @@ public class CardsListTest {
         assertEquals("Low", ordered.get(2).getName());
     }
 
+    @Test
+    public void getAnalytics_populatedList_success() {
+        CardsList cardsList = new CardsList();
+
+        cardsList.addCard(new Card.Builder()
+                .name("Charizard")
+                .price(100.0f)
+                .quantity(2)
+                .cardSet("Base Set")
+                .build());
+        cardsList.addCard(new Card.Builder()
+                .name("Blastoise")
+                .price(80.0f)
+                .quantity(1)
+                .cardSet("Base Set")
+                .build());
+        cardsList.addCard(new Card.Builder()
+                .name("Pikachu")
+                .price(20.0f)
+                .quantity(4)
+                .cardSet("Jungle")
+                .build());
+        cardsList.addCard(new Card.Builder()
+                .name("Mew")
+                .price(90.0f)
+                .quantity(1)
+                .build());
+
+        CardsAnalytics analytics = cardsList.getAnalytics(3, 3);
+
+        assertEquals(4, analytics.getDistinctCards());
+        assertEquals(8, analytics.getTotalQuantity());
+        assertEquals(450.0, analytics.getTotalValue(), 0.001);
+
+        assertEquals(3, analytics.getMostExpensiveCards().size());
+        assertEquals("Charizard", analytics.getMostExpensiveCards().get(0).getCard().getName());
+        assertEquals("Mew", analytics.getMostExpensiveCards().get(1).getCard().getName());
+        assertEquals("Blastoise", analytics.getMostExpensiveCards().get(2).getCard().getName());
+        assertEquals(200.0, analytics.getMostExpensiveCards().get(0).getLineValue(), 0.001);
+
+        assertEquals(3, analytics.getTopSetsByCount().size());
+        assertEquals("Jungle", analytics.getTopSetsByCount().get(0).getSetName());
+        assertEquals(4, analytics.getTopSetsByCount().get(0).getTotalCount());
+        assertEquals("Base Set", analytics.getTopSetsByCount().get(1).getSetName());
+        assertEquals(3, analytics.getTopSetsByCount().get(1).getTotalCount());
+        assertEquals("Unspecified Set", analytics.getTopSetsByCount().get(2).getSetName());
+        assertEquals(1, analytics.getTopSetsByCount().get(2).getTotalCount());
+    }
+
+    @Test
+    public void getAnalytics_emptyList_success() {
+        CardsList cardsList = new CardsList();
+
+        CardsAnalytics analytics = cardsList.getAnalytics(3, 3);
+
+        assertEquals(0, analytics.getDistinctCards());
+        assertEquals(0, analytics.getTotalQuantity());
+        assertEquals(0.0, analytics.getTotalValue(), 0.001);
+        assertTrue(analytics.getMostExpensiveCards().isEmpty());
+        assertTrue(analytics.getTopSetsByCount().isEmpty());
+    }
+
     //@@author HX2003
     @Test
     public void cardsList_addEditRemove_historySuccess() {

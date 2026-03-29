@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class CardsList {
     private final ArrayList<Card> cards;
@@ -118,6 +119,37 @@ public class CardsList {
 
     public ArrayList<Card> getCards() {
         return cards;
+    }
+
+    public CardsAnalytics getAnalytics(int expensiveLimit, int topSetLimit) {
+        int totalQuantity = 0;
+        double totalValue = 0;
+        Map<String, Integer> setCounts = new HashMap<>();
+
+        for (Card card : cards) {
+            totalQuantity += card.getQuantity();
+            totalValue += card.getPrice() * card.getQuantity();
+
+            String normalizedSetName = normalizeSetName(card.getCardSet());
+            setCounts.merge(normalizedSetName, card.getQuantity(), Integer::sum);
+        }
+
+        ArrayList<CardsAnalytics.CardMetric> mostExpensiveCards = cards.stream()
+                .sorted(Comparator.comparingDouble(Card::getPrice)
+                        .reversed()
+                        .thenComparing(Card::getName, String.CASE_INSENSITIVE_ORDER))
+                .limit(expensiveLimit)
+                .map(card -> new CardsAnalytics.CardMetric(card, card.getPrice() * card.getQuantity()))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        ArrayList<CardsAnalytics.SetMetric> topSetsByCount = setCounts.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed()
+                        .thenComparing(Map.Entry.comparingByKey(String.CASE_INSENSITIVE_ORDER)))
+                .limit(topSetLimit)
+                .map(entry -> new CardsAnalytics.SetMetric(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        return new CardsAnalytics(cards.size(), totalQuantity, totalValue, mostExpensiveCards, topSetsByCount);
     }
 
     public int getSize() {
@@ -348,6 +380,13 @@ public class CardsList {
         }
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private static String normalizeSetName(String setName) {
+        if (setName == null || setName.isBlank()) {
+            return "Unspecified Set";
+        }
+        return setName.trim();
     }
 
     /**

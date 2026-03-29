@@ -71,6 +71,19 @@ Displays all cards in the current list, or only cards with a specific tag/folder
 `list`
 `list /t sealed`
 
+### Viewing analytics: `analytics` or `stats`
+
+Shows a quick summary of the current list, including total value, the 3 most expensive cards,
+and the top sets by total quantity.
+
+**Format:** `analytics`
+**Format:** `stats`
+
+**Examples:**
+`analytics`
+`stats`
+`wishlist analytics`
+
 ### Finding cards: `find`
 
 Searches the current list by name, price, quantity, optional metadata, tags/folders, or any combination of them.
@@ -199,6 +212,7 @@ Exits the application.
 | `tag add INDEX /t TAG` | Add tag/folder |
 | `tag remove INDEX /t TAG` | Remove tag/folder |
 | `wishlist acquired INDEX` | Move to inventory |
+| `analytics` | Show list insights |
 | `download /f FILE_PATH` | Export data |
 | `upload /f FILE_PATH` | Import data |
 | `undoupload` | Undo upload |

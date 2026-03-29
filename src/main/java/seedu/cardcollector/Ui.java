@@ -5,6 +5,7 @@ import seedu.cardcollector.card.CardFieldChange;
 import seedu.cardcollector.card.CardsHistory;
 import seedu.cardcollector.card.CardHistoryEntry;
 import seedu.cardcollector.card.CardHistoryType;
+import seedu.cardcollector.card.CardsAnalytics;
 import seedu.cardcollector.card.CardsList;
 
 import java.nio.file.Path;
@@ -13,6 +14,8 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Scanner;
 
@@ -176,6 +179,18 @@ public class Ui {
         printBorder();
     }
 
+    public void printAnalytics(String listName, CardsAnalytics analytics) {
+        printBorder();
+        System.out.println("Analytics for your " + listName + ":");
+        System.out.println("Distinct cards: " + analytics.getDistinctCards());
+        System.out.println("Total quantity: " + analytics.getTotalQuantity());
+        System.out.println("Total value: $" + formatMoney(analytics.getTotalValue()));
+
+        printMostExpensiveCards(analytics.getMostExpensiveCards());
+        printTopSets(analytics.getTopSetsByCount());
+        printBorder();
+    }
+
     public void printFound(ArrayList<Card> results) {
         assert results != null : "Results list passed to Ui should not be null";
 
@@ -204,6 +219,39 @@ public class Ui {
             }
         }
         printBorder();
+    }
+
+    private void printMostExpensiveCards(List<CardsAnalytics.CardMetric> expensiveCards) {
+        System.out.println("Top expensive cards:");
+        if (expensiveCards.isEmpty()) {
+            System.out.println("None");
+            return;
+        }
+
+        for (int i = 0; i < expensiveCards.size(); i++) {
+            CardsAnalytics.CardMetric metric = expensiveCards.get(i);
+            Card card = metric.getCard();
+            System.out.println((i + 1) + ". " + card.getName()
+                    + " ($" + formatMoney(card.getPrice()) + " each, qty " + card.getQuantity()
+                    + ", total $" + formatMoney(metric.getLineValue()) + ")");
+        }
+    }
+
+    private void printTopSets(List<CardsAnalytics.SetMetric> topSets) {
+        System.out.println("Top sets by count:");
+        if (topSets.isEmpty()) {
+            System.out.println("None");
+            return;
+        }
+
+        for (int i = 0; i < topSets.size(); i++) {
+            CardsAnalytics.SetMetric metric = topSets.get(i);
+            System.out.println((i + 1) + ". " + metric.getSetName() + " (" + metric.getTotalCount() + ")");
+        }
+    }
+
+    private static String formatMoney(double value) {
+        return String.format(Locale.ROOT, "%.2f", value);
     }
 
     public void printTagUpdated(CardsList list, int index, String tag, String action) {
