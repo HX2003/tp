@@ -56,6 +56,8 @@ public class ParserTest {
         assertInstanceOf(AddCommand.class, parser.parse("add /n Pikachu /p 5.5 /q 1"));
         assertInstanceOf(AddCommand.class, parser.parse("add /n Charizard /q 2 /p 99.99 /id "
                 + java.util.UUID.randomUUID()));
+        assertInstanceOf(AddCommand.class, parser.parse(
+                "add /n Charizard /q 2 /p 99.99 /s Base Set /r Holo /c Near Mint /l English /no 4/102"));
     }
 
     //@@author WeiHeng2003

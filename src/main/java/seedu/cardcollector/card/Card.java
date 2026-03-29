@@ -8,6 +8,11 @@ public class Card {
     private String name;
     private int quantity;
     private float price;
+    private String cardSet;
+    private String rarity;
+    private String condition;
+    private String language;
+    private String cardNumber;
     private Instant lastAdded = null;    // lastAdded is a nullable type
     private Instant lastModified = null; // lastModified is a nullable type
     private Instant lastRemoved = null;  // lastRemoved is a nullable type
@@ -17,6 +22,11 @@ public class Card {
         this.name = builder.name;
         this.quantity = builder.quantity;
         this.price = builder.price;
+        this.cardSet = builder.cardSet;
+        this.rarity = builder.rarity;
+        this.condition = builder.condition;
+        this.language = builder.language;
+        this.cardNumber = builder.cardNumber;
         this.lastAdded = builder.lastAdded;
         this.lastModified = builder.lastModified;
         this.lastRemoved = builder.lastRemoved;
@@ -27,6 +37,11 @@ public class Card {
         private String name;
         private Integer quantity;
         private Float price;
+        private String cardSet;
+        private String rarity;
+        private String condition;
+        private String language;
+        private String cardNumber;
         private Instant lastAdded;
         private Instant lastModified;
         private Instant lastRemoved;
@@ -48,6 +63,31 @@ public class Card {
 
         public Builder quantity(int quantity) {
             this.quantity = quantity;
+            return this;
+        }
+
+        public Builder cardSet(String cardSet) {
+            this.cardSet = cardSet;
+            return this;
+        }
+
+        public Builder rarity(String rarity) {
+            this.rarity = rarity;
+            return this;
+        }
+
+        public Builder condition(String condition) {
+            this.condition = condition;
+            return this;
+        }
+
+        public Builder language(String language) {
+            this.language = language;
+            return this;
+        }
+
+        public Builder cardNumber(String cardNumber) {
+            this.cardNumber = cardNumber;
             return this;
         }
 
@@ -109,6 +149,46 @@ public class Card {
         this.price = price;
     }
 
+    public String getCardSet() {
+        return cardSet;
+    }
+
+    public void setCardSet(String cardSet) {
+        this.cardSet = cardSet;
+    }
+
+    public String getRarity() {
+        return rarity;
+    }
+
+    public void setRarity(String rarity) {
+        this.rarity = rarity;
+    }
+
+    public String getCondition() {
+        return condition;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public String getCardNumber() {
+        return cardNumber;
+    }
+
+    public void setCardNumber(String cardNumber) {
+        this.cardNumber = cardNumber;
+    }
+
     public Instant getLastAdded() {
         return lastAdded;
     }
@@ -140,6 +220,11 @@ public class Card {
                 .name(name)
                 .quantity(quantity)
                 .price(price)
+                .cardSet(cardSet)
+                .rarity(rarity)
+                .condition(condition)
+                .language(language)
+                .cardNumber(cardNumber)
                 .lastAdded(lastAdded)
                 .lastModified(lastModified)
                 .lastRemoved(lastRemoved)
@@ -148,6 +233,26 @@ public class Card {
 
     @Override
     public String toString() {
-        return name + " | Quantity: " + quantity + " | Price: " + price;
+        StringBuilder builder = new StringBuilder()
+                .append(name)
+                .append(" | Quantity: ")
+                .append(quantity)
+                .append(" | Price: ")
+                .append(price);
+
+        appendMetadata(builder, "Set", cardSet);
+        appendMetadata(builder, "Rarity", rarity);
+        appendMetadata(builder, "Condition", condition);
+        appendMetadata(builder, "Language", language);
+        appendMetadata(builder, "Card No.", cardNumber);
+
+        return builder.toString();
+    }
+
+    private static void appendMetadata(StringBuilder builder, String label, String value) {
+        if (value == null || value.isBlank()) {
+            return;
+        }
+        builder.append(" | ").append(label).append(": ").append(value);
     }
 }

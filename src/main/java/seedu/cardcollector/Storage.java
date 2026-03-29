@@ -17,7 +17,8 @@ import java.util.Map;
 import java.util.UUID;
 
 public class Storage {
-    private static final String FILE_HEADER = "CARDCOLLECTOR_STORAGE_V2";
+    private static final String FILE_HEADER_V3 = "CARDCOLLECTOR_STORAGE_V3";
+    private static final String FILE_HEADER_V2 = "CARDCOLLECTOR_STORAGE_V2";
     private static final String NULL_VALUE = "-";
 
     private final Path filePath;
@@ -36,7 +37,7 @@ public class Storage {
         }
 
         List<String> lines = Files.readAllLines(filePath, StandardCharsets.UTF_8);
-        if (lines.isEmpty() || !FILE_HEADER.equals(lines.get(0))) {
+        if (lines.isEmpty() || !isSupportedHeader(lines.get(0))) {
             throw new IOException("Invalid storage file header");
         }
 
@@ -75,7 +76,7 @@ public class Storage {
         }
 
         ArrayList<String> lines = new ArrayList<>();
-        lines.add(FILE_HEADER);
+        lines.add(FILE_HEADER_V3);
         appendSection(lines, "inventory", state.getInventory().getCards());
         appendSection(lines, "inventory_history", state.getInventory().getHistory().getFlattenedCards());
         appendSection(lines, "wishlist", state.getWishlist().getCards());
@@ -115,6 +116,11 @@ public class Storage {
                 Base64.getEncoder().encodeToString(card.getName().getBytes(StandardCharsets.UTF_8)),
                 String.valueOf(card.getQuantity()),
                 String.valueOf(card.getPrice()),
+                serializeText(card.getCardSet()),
+                serializeText(card.getRarity()),
+                serializeText(card.getCondition()),
+                serializeText(card.getLanguage()),
+                serializeText(card.getCardNumber()),
                 serializeInstant(card.getLastAdded()),
                 serializeInstant(card.getLastModified()),
                 serializeInstant(card.getLastRemoved()));
@@ -126,7 +132,7 @@ public class Storage {
         }
 
         String[] parts = line.split("\t", -1);
-        if (parts.length != 7) {
+        if (parts.length != 7 && parts.length != 12) {
             throw new IOException("Malformed card record");
         }
 
@@ -135,15 +141,26 @@ public class Storage {
             String name = new String(Base64.getDecoder().decode(parts[1]), StandardCharsets.UTF_8);
             int quantity = Integer.parseInt(parts[2]);
             float price = Float.parseFloat(parts[3]);
-            Instant lastAdded = parseInstant(parts[4]);
-            Instant lastModified = parseInstant(parts[5]);
-            Instant lastRemoved = parseInstant(parts[6]);
+            String cardSet = parts.length == 12 ? parseText(parts[4]) : null;
+            String rarity = parts.length == 12 ? parseText(parts[5]) : null;
+            String condition = parts.length == 12 ? parseText(parts[6]) : null;
+            String language = parts.length == 12 ? parseText(parts[7]) : null;
+            String cardNumber = parts.length == 12 ? parseText(parts[8]) : null;
+            int instantStartIndex = parts.length == 12 ? 9 : 4;
+            Instant lastAdded = parseInstant(parts[instantStartIndex]);
+            Instant lastModified = parseInstant(parts[instantStartIndex + 1]);
+            Instant lastRemoved = parseInstant(parts[instantStartIndex + 2]);
 
             return new Card.Builder()
                     .uid(uid)
                     .name(name)
                     .quantity(quantity)
                     .price(price)
+                    .cardSet(cardSet)
+                    .rarity(rarity)
+                    .condition(condition)
+                    .language(language)
+                    .cardNumber(cardNumber)
                     .lastAdded(lastAdded)
                     .lastModified(lastModified)
                     .lastRemoved(lastRemoved)
@@ -157,7 +174,25 @@ public class Storage {
         return instant == null ? NULL_VALUE : instant.toString();
     }
 
+    private static String serializeText(String value) {
+        if (value == null || value.isBlank()) {
+            return NULL_VALUE;
+        }
+        return Base64.getEncoder().encodeToString(value.getBytes(StandardCharsets.UTF_8));
+    }
+
     private static Instant parseInstant(String value) {
         return NULL_VALUE.equals(value) ? null : Instant.parse(value);
+    }
+
+    private static String parseText(String value) {
+        if (NULL_VALUE.equals(value)) {
+            return null;
+        }
+        return new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8);
+    }
+
+    private static boolean isSupportedHeader(String header) {
+        return FILE_HEADER_V2.equals(header) || FILE_HEADER_V3.equals(header);
     }
 }

@@ -30,6 +30,11 @@ public class StorageTest {
                 .name("Pikachu")
                 .price(5.5f)
                 .quantity(2)
+                .cardSet("Base Set")
+                .rarity("Rare")
+                .condition("Near Mint")
+                .language("English")
+                .cardNumber("58/102")
                 .build();
         inventory.addCard(activeCard);
         activeCard.setLastAdded(Instant.parse("2026-03-26T09:00:00Z"));
@@ -68,6 +73,8 @@ public class StorageTest {
         Card loadedActiveCard = loadedInventory.getCard(0);
 
         assertEquals("Pikachu", loadedActiveCard.getName());
+        assertEquals("Base Set", loadedActiveCard.getCardSet());
+        assertEquals("58/102", loadedActiveCard.getCardNumber());
         assertEquals(Instant.parse("2026-03-26T09:00:00Z"), loadedActiveCard.getLastAdded());
         assertNotNull(loadedWishlist.getCard(0).getLastAdded());
     }

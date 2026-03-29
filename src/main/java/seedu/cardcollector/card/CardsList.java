@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class CardsList {
@@ -31,8 +32,7 @@ public class CardsList {
         Instant currentInstant = Instant.now();
 
         for (Card existingCard : cards) {
-            if (existingCard.getName().equalsIgnoreCase(newCard.getName()) &&
-                existingCard.getPrice() == newCard.getPrice()){
+            if (isSameCardVariant(existingCard, newCard)) {
                 Card originalCard = existingCard.copy();
 
                 int updatedQuantity = existingCard.getQuantity() + newCard.getQuantity();
@@ -149,7 +149,8 @@ public class CardsList {
         return result;
     }
 
-    public ArrayList<Card> findCards(String name, Float price, Integer quantity) {
+    public ArrayList<Card> findCards(String name, Float price, Integer quantity,
+            String cardSet, String rarity, String condition, String language, String cardNumber) {
         assert cards != null : "Cards inventory should be initialized before searching";
 
         ArrayList<Card> results = new ArrayList<>();
@@ -162,6 +163,21 @@ public class CardsList {
                 matches = false;
             }
             if (quantity != null && card.getQuantity() != quantity) {
+                matches = false;
+            }
+            if (!containsIgnoreCase(card.getCardSet(), cardSet)) {
+                matches = false;
+            }
+            if (!containsIgnoreCase(card.getRarity(), rarity)) {
+                matches = false;
+            }
+            if (!containsIgnoreCase(card.getCondition(), condition)) {
+                matches = false;
+            }
+            if (!containsIgnoreCase(card.getLanguage(), language)) {
+                matches = false;
+            }
+            if (!containsIgnoreCase(card.getCardNumber(), cardNumber)) {
                 matches = false;
             }
             if (matches) {
@@ -183,7 +199,8 @@ public class CardsList {
         return CardSort.sortCards(cards, criteria, isAscending, maxLimit, defaultMaxLimit);
     }
 
-    public boolean editCard(int index, String newName, Integer newQuantity, Float newPrice) {
+    public boolean editCard(int index, String newName, Integer newQuantity, Float newPrice,
+            String newCardSet, String newRarity, String newCondition, String newLanguage, String newCardNumber) {
         assert index >= 0 && index < cards.size() : "Index should be validated before calling editCard";
 
         Card card = cards.get(index);
@@ -225,6 +242,26 @@ public class CardsList {
             card.setPrice(newPrice);
             anyFieldChanged = true;
         }
+        if (isUpdatedTextValue(newCardSet, card.getCardSet())) {
+            card.setCardSet(trimToNull(newCardSet));
+            anyFieldChanged = true;
+        }
+        if (isUpdatedTextValue(newRarity, card.getRarity())) {
+            card.setRarity(trimToNull(newRarity));
+            anyFieldChanged = true;
+        }
+        if (isUpdatedTextValue(newCondition, card.getCondition())) {
+            card.setCondition(trimToNull(newCondition));
+            anyFieldChanged = true;
+        }
+        if (isUpdatedTextValue(newLanguage, card.getLanguage())) {
+            card.setLanguage(trimToNull(newLanguage));
+            anyFieldChanged = true;
+        }
+        if (isUpdatedTextValue(newCardNumber, card.getCardNumber())) {
+            card.setCardNumber(trimToNull(newCardNumber));
+            anyFieldChanged = true;
+        }
 
         if (anyFieldChanged) {
             card.setLastModified(currentInstant);
@@ -232,6 +269,45 @@ public class CardsList {
         }
 
         return quantityChanged || anyFieldChanged;
+    }
+
+    private static boolean isSameCardVariant(Card first, Card second) {
+        return first.getName().equalsIgnoreCase(second.getName())
+                && first.getPrice() == second.getPrice()
+                && normalized(first.getCardSet()).equals(normalized(second.getCardSet()))
+                && normalized(first.getRarity()).equals(normalized(second.getRarity()))
+                && normalized(first.getCondition()).equals(normalized(second.getCondition()))
+                && normalized(first.getLanguage()).equals(normalized(second.getLanguage()))
+                && normalized(first.getCardNumber()).equals(normalized(second.getCardNumber()));
+    }
+
+    private static boolean containsIgnoreCase(String actualValue, String expectedFragment) {
+        if (expectedFragment == null) {
+            return true;
+        }
+        if (actualValue == null) {
+            return false;
+        }
+        return actualValue.toLowerCase(Locale.ROOT).contains(expectedFragment.toLowerCase(Locale.ROOT));
+    }
+
+    private static boolean isUpdatedTextValue(String candidate, String currentValue) {
+        if (candidate == null) {
+            return false;
+        }
+        return !normalized(candidate).equals(normalized(currentValue));
+    }
+
+    private static String normalized(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private static String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     /**

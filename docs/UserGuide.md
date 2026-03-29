@@ -2,7 +2,9 @@
 
 ## Introduction
 
-CardCollector is a CLI application for tracking a trading card inventory and a separate wishlist. Each card stores a name, quantity, price, and timestamps used by the history commands.
+CardCollector is a CLI application for tracking a trading card inventory and a separate wishlist.
+Each card stores a name, quantity, price, optional metadata such as set, rarity, condition,
+language, and card number, plus timestamps used by the history commands.
 
 ## Quick Start
 
@@ -16,23 +18,26 @@ CardCollector is a CLI application for tracking a trading card inventory and a s
 
 Adds a new card to the current list.
 
-**Format:** `add /n NAME /q QUANTITY /p PRICE`
+**Format:** `add /n NAME /q QUANTITY /p PRICE [/s SET] [/r RARITY] [/c CONDITION] [/l LANGUAGE] [/no CARD_NUMBER]`
 
 - `NAME` can contain spaces.
 - `QUANTITY` must be an integer greater than or equal to 0.
 - `PRICE` must be a valid number.
+- Metadata flags are optional.
 
 **Example:** `add /n Pikachu VMAX /q 2 /p 25.50`
+**Example:** `add /n Charizard /q 1 /p 99.99 /s Base Set /r Holo /c Near Mint /l English /no 4/102`
 
 ### Editing a card: `edit`
 
-Edits the name, quantity, or price of an existing card.
+Edits the name, quantity, price, or optional metadata of an existing card.
 
-**Format:** `edit INDEX [/n NEW_NAME] [/q NEW_QUANTITY] [/p NEW_PRICE]`
+**Format:** `edit INDEX [/n NEW_NAME] [/q NEW_QUANTITY] [/p NEW_PRICE] [/s SET] [/r RARITY] [/c CONDITION] [/l LANGUAGE] [/no CARD_NUMBER]`
 
 **Examples:**
 `edit 1 /n Dragonite VMAX`
 `edit 2 /q 5 /p 12.99`
+`edit 3 /s Jungle /r Rare`
 
 ### Comparing cards: `compare`
 
@@ -64,14 +69,15 @@ Displays all cards in the current list.
 
 ### Finding cards: `find`
 
-Searches the current list by name, price, quantity, or any combination of them.
+Searches the current list by name, price, quantity, optional metadata, or any combination of them.
 
-**Format:** `find [/n NAME] [/p PRICE] [/q QUANTITY]`
+**Format:** `find [/n NAME] [/p PRICE] [/q QUANTITY] [/s SET] [/r RARITY] [/c CONDITION] [/l LANGUAGE] [/no CARD_NUMBER]`
 
 **Examples:**
 `find /n pika`
 `find /p 5.99`
 `find /n charizard /q 2`
+`find /s Base Set /r Rare`
 
 ### Removing a card by index: `removeindex`
 

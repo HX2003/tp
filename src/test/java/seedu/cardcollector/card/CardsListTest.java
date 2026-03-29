@@ -45,7 +45,7 @@ public class CardsListTest {
                 .build());
 
         // Case-insensitive and partial match for "pika"
-        ArrayList<Card> results = cardsList.findCards("pika", null, null);
+        ArrayList<Card> results = cardsList.findCards("pika", null, null, null, null, null, null, null);
         
         assertEquals(2, results.size());
         assertEquals("Pikachu", results.get(0).getName());
@@ -68,7 +68,7 @@ public class CardsListTest {
                 .build());
 
         // Exact price match
-        ArrayList<Card> results = cardsList.findCards(null, 10.00f, null);
+        ArrayList<Card> results = cardsList.findCards(null, 10.00f, null, null, null, null, null, null);
         
         assertEquals(1, results.size());
         assertEquals("Charizard", results.get(0).getName());
@@ -90,7 +90,7 @@ public class CardsListTest {
                 .build());
 
         // Exact quantity match
-        ArrayList<Card> results = cardsList.findCards(null, null, 5);
+        ArrayList<Card> results = cardsList.findCards(null, null, 5, null, null, null, null, null);
         
         assertEquals(1, results.size());
         assertEquals("Bulbasaur", results.get(0).getName());
@@ -117,7 +117,7 @@ public class CardsListTest {
                 .build());
 
         // Matches both Name (contains "Mew") AND Quantity (exactly 3)
-        ArrayList<Card> results = cardsList.findCards("Mew", null, 3);
+        ArrayList<Card> results = cardsList.findCards("Mew", null, 3, null, null, null, null, null);
         
         assertEquals(2, results.size());
         assertEquals(20.00f, results.get(0).getPrice());
@@ -135,7 +135,7 @@ public class CardsListTest {
                 .build());
 
         // Searching for attributes that don't exist
-        ArrayList<Card> results = cardsList.findCards("Snorlax", 100.00f, null);
+        ArrayList<Card> results = cardsList.findCards("Snorlax", 100.00f, null, null, null, null, null, null);
         
         assertEquals(0, results.size());
     }
@@ -152,16 +152,48 @@ public class CardsListTest {
         cardsList.addCard(original);
 
         // partial edit (only name + quantity)
-        cardsList.editCard(0, "Pikachu VMAX", 5, null);
+        cardsList.editCard(0, "Pikachu VMAX", 5, null, null, null, null, null, null);
         assertEquals("Pikachu VMAX", cardsList.getCard(0).getName());
         assertEquals(5, cardsList.getCard(0).getQuantity());
         assertEquals(5.50f, cardsList.getCard(0).getPrice()); // price unchanged
 
         // full edit
-        cardsList.editCard(0, "Charizard", 10, 25.0f);
+        cardsList.editCard(0, "Charizard", 10, 25.0f, null, null, null, null, null);
         assertEquals("Charizard", cardsList.getCard(0).getName());
         assertEquals(10, cardsList.getCard(0).getQuantity());
         assertEquals(25.0f, cardsList.getCard(0).getPrice());
+    }
+
+    @Test
+    public void addAndFindCards_withMetadata_success() {
+        CardsList cardsList = new CardsList();
+
+        cardsList.addCard(new Card.Builder()
+                .name("Pikachu")
+                .price(5.50f)
+                .quantity(1)
+                .cardSet("Base Set")
+                .rarity("Rare")
+                .condition("Near Mint")
+                .language("English")
+                .cardNumber("58/102")
+                .build());
+        cardsList.addCard(new Card.Builder()
+                .name("Pikachu")
+                .price(5.50f)
+                .quantity(1)
+                .cardSet("Jungle")
+                .rarity("Common")
+                .condition("Played")
+                .language("Japanese")
+                .cardNumber("12/64")
+                .build());
+
+        ArrayList<Card> results = cardsList.findCards(
+                null, null, null, "base", "rare", "near", "english", "58/102");
+
+        assertEquals(1, results.size());
+        assertEquals("Base Set", results.get(0).getCardSet());
     }
 
     @Test
@@ -299,21 +331,21 @@ public class CardsListTest {
         cardsList.removeCardByIndex(1);
 
         // Edit name of the card only
-        cardsList.editCard(0, "Zero noro", null, null);
+        cardsList.editCard(0, "Zero noro", null, null, null, null, null, null, null);
 
         // Edit quantity (from 1 to 5) of the card only
-        cardsList.editCard(0, null, 5, null);
+        cardsList.editCard(0, null, 5, null, null, null, null, null, null);
 
         // Edit quantity (from 5 to 4) of the card only
-        cardsList.editCard(0, null, 4, null);
+        cardsList.editCard(0, null, 4, null, null, null, null, null, null);
 
         // Edit quantity (from 4 to 4) of the card only,
         // but actually quantity was not changed
-        cardsList.editCard(0, null, 4, null);
+        cardsList.editCard(0, null, 4, null, null, null, null, null, null);
 
         // Edit quantity (from 4 to 3) of the card,
         // at the same time change its price
-        cardsList.editCard(0, null, 3, 9.99f);
+        cardsList.editCard(0, null, 3, 9.99f, null, null, null, null, null);
 
         CardsHistory history = cardsList.getHistory();
         ArrayList<CardHistoryEntry> historyList = history.getSortedHistoryList(false);

@@ -26,6 +26,22 @@ import java.util.UUID;
 
 public class Parser {
     private static final String REGEX_WHITESPACES = "\\s+";
+    private static final String FLAG_NAME = "/n";
+    private static final String FLAG_QUANTITY = "/q";
+    private static final String FLAG_PRICE = "/p";
+    private static final String FLAG_SET = "/s";
+    private static final String FLAG_RARITY = "/r";
+    private static final String FLAG_CONDITION = "/c";
+    private static final String FLAG_LANGUAGE = "/l";
+    private static final String FLAG_CARD_NUMBER = "/no";
+    private static final String FLAG_ID = "/id";
+    private static final String[] CARD_FIELD_FLAGS = {
+        FLAG_NAME, FLAG_QUANTITY, FLAG_PRICE, FLAG_SET, FLAG_RARITY, FLAG_CONDITION, FLAG_LANGUAGE, FLAG_CARD_NUMBER
+    };
+    private static final String[] ADD_FIELD_FLAGS = {
+        FLAG_NAME, FLAG_QUANTITY, FLAG_PRICE, FLAG_SET, FLAG_RARITY, FLAG_CONDITION, FLAG_LANGUAGE, FLAG_CARD_NUMBER,
+        FLAG_ID
+    };
 
     private static final String KEYWORD_HISTORY_COMMAND = "history";
     private static final String KEYWORD_ADD_COMMAND = "add";
@@ -56,10 +72,23 @@ public class Parser {
     };
 
     private static final String[] USAGE_FIND_COMMAND = {
-        "find [/n NAME] [/p PRICE] [/q QUANTITY]",
+        "find [/n NAME] [/p PRICE] [/q QUANTITY] [/s SET] [/r RARITY] [/c CONDITION] [/l LANGUAGE] [/no CARD_NUMBER]",
         "find /n Pikachu",
         "find /p 12.5",
-        "find /n Pikachu /q 3"
+        "find /n Pikachu /q 3",
+        "find /s Base Set /r Rare"
+    };
+
+    private static final String[] USAGE_ADD_COMMAND = {
+        "add /n NAME /q QTY /p PRICE [/s SET] [/r RARITY] [/c CONDITION] [/l LANGUAGE] [/no CARD_NUMBER]",
+        "add /n Pikachu /q 1 /p 5.5",
+        "add /n Charizard /q 1 /p 99.99 /s Base Set /r Holo /c Near Mint /l English /no 4/102"
+    };
+
+    private static final String[] USAGE_EDIT_COMMAND = {
+        "edit INDEX [/n NAME] [/q QTY] [/p PRICE] [/s SET] [/r RARITY] [/c CONDITION] [/l LANGUAGE] [/no CARD_NUMBER]",
+        "edit 1 /n Dragonite VMAX",
+        "edit 2 /s Jungle /r Rare"
     };
 
     private static final String[] USAGE_TRANSFER_COMMAND = {
@@ -124,30 +153,35 @@ public class Parser {
         if (!args.contains("/n") || !args.contains("/q") || !args.contains("/p")) {
             throw new ParseInvalidArgumentException(
                     "Missing required flags (/n /q /p)",
-                    new String[]{"add /n NAME /q QTY /p PRICE"}
+                    USAGE_ADD_COMMAND
             );
         }
 
         try {
-            String name = args.split("/n")[1].split("/q|/p|/id")[0].trim();
-            int quantity = Integer.parseInt(args.split("/q")[1].split("/n|/p|/id")[0].trim());
-            float price = Float.parseFloat(args.split("/p")[1].split("/n|/q|/id")[0].trim());
+            String name = requireTextFlag(args, FLAG_NAME, ADD_FIELD_FLAGS);
+            int quantity = Integer.parseInt(requireTextFlag(args, FLAG_QUANTITY, ADD_FIELD_FLAGS));
+            float price = Float.parseFloat(requireTextFlag(args, FLAG_PRICE, ADD_FIELD_FLAGS));
+            String cardSet = optionalTextFlag(args, FLAG_SET, ADD_FIELD_FLAGS);
+            String rarity = optionalTextFlag(args, FLAG_RARITY, ADD_FIELD_FLAGS);
+            String condition = optionalTextFlag(args, FLAG_CONDITION, ADD_FIELD_FLAGS);
+            String language = optionalTextFlag(args, FLAG_LANGUAGE, ADD_FIELD_FLAGS);
+            String cardNumber = optionalTextFlag(args, FLAG_CARD_NUMBER, ADD_FIELD_FLAGS);
 
             UUID uid = null;
-            if (args.contains("/id")) {
-                String uidString = args.split("/id")[1].split("/n|/q|/p")[0].trim();
+            String uidString = optionalTextFlag(args, FLAG_ID, ADD_FIELD_FLAGS);
+            if (uidString != null) {
                 uid = UUID.fromString(uidString);
             }
-            return new AddCommand(uid, name, quantity, price);
+            return new AddCommand(uid, name, quantity, price, cardSet, rarity, condition, language, cardNumber);
         } catch (NumberFormatException e) {
             throw new ParseInvalidArgumentException(
                     "Quantity must be an integer and price must be float",
-                    new String[]{"add /n NAME /q QTY /p PRICE"}
+                    USAGE_ADD_COMMAND
             );
         } catch (Exception e) {
             throw new ParseInvalidArgumentException(
                     "Invalid add format",
-                    new String[]{"add /n NAME /q QTY /p PRICE [/id UUID]"}
+                    USAGE_ADD_COMMAND
             );
         }
     }
@@ -185,20 +219,27 @@ public class Parser {
         String name = null;
         Float price = null;
         Integer quantity = null;
+        String cardSet = null;
+        String rarity = null;
+        String condition = null;
+        String language = null;
+        String cardNumber = null;
 
         try {
-            if (arguments.contains("/n")) {
-                name = arguments.split("/n")[1].split("/q|/p")[0].trim();
-                if (name.isEmpty()) {
-                    name = null;
-                }
+            name = optionalTextFlag(arguments, FLAG_NAME, CARD_FIELD_FLAGS);
+            String quantityText = optionalTextFlag(arguments, FLAG_QUANTITY, CARD_FIELD_FLAGS);
+            if (quantityText != null) {
+                quantity = Integer.parseInt(quantityText);
             }
-            if (arguments.contains("/q")) {
-                quantity = Integer.parseInt(arguments.split("/q")[1].split("/n|/p")[0].trim());
+            String priceText = optionalTextFlag(arguments, FLAG_PRICE, CARD_FIELD_FLAGS);
+            if (priceText != null) {
+                price = Float.parseFloat(priceText);
             }
-            if (arguments.contains("/p")) {
-                price = Float.parseFloat(arguments.split("/p")[1].split("/n|/q")[0].trim());
-            }
+            cardSet = optionalTextFlag(arguments, FLAG_SET, CARD_FIELD_FLAGS);
+            rarity = optionalTextFlag(arguments, FLAG_RARITY, CARD_FIELD_FLAGS);
+            condition = optionalTextFlag(arguments, FLAG_CONDITION, CARD_FIELD_FLAGS);
+            language = optionalTextFlag(arguments, FLAG_LANGUAGE, CARD_FIELD_FLAGS);
+            cardNumber = optionalTextFlag(arguments, FLAG_CARD_NUMBER, CARD_FIELD_FLAGS);
         } catch (NumberFormatException e) {
             throw new ParseInvalidArgumentException(
                     "Invalid number format for price or quantity",
@@ -211,14 +252,16 @@ public class Parser {
             );
         }
 
-        if (name == null && price == null && quantity == null) {
+        if (name == null && price == null && quantity == null
+                && cardSet == null && rarity == null && condition == null
+                && language == null && cardNumber == null) {
             throw new ParseInvalidArgumentException(
-                    "At least one search field (/n, /p, /q) must be provided",
+                    "At least one search field must be provided",
                     USAGE_FIND_COMMAND
             );
         }
 
-        return new FindCommand(name, price, quantity);
+        return new FindCommand(name, price, quantity, cardSet, rarity, condition, language, cardNumber);
     }
 
     private Command handleList(String arguments) throws ParseInvalidArgumentException {
@@ -387,7 +430,7 @@ public class Parser {
         if (args.isBlank()) {
             throw new ParseInvalidArgumentException(
                     "Index must be provided",
-                    new String[]{"edit INDEX [/n NAME] [/q QTY] [/p PRICE]"}
+                    USAGE_EDIT_COMMAND
             );
         }
 
@@ -398,7 +441,7 @@ public class Parser {
         } catch (NumberFormatException e) {
             throw new ParseInvalidArgumentException(
                     "Index must be a valid integer",
-                    new String[]{"edit INDEX [/n NAME] [/q QTY] [/p PRICE]"}
+                    USAGE_EDIT_COMMAND
             );
         }
 
@@ -407,42 +450,102 @@ public class Parser {
         String name = null;
         Integer quantity = null;
         Float price = null;
+        String cardSet = null;
+        String rarity = null;
+        String condition = null;
+        String language = null;
+        String cardNumber = null;
 
         if (!flagArgs.isBlank()) {
             try {
-                if (flagArgs.contains("/n")) {
-                    name = flagArgs.split("/n")[1].split("/q|/p")[0].trim();
-                    if (name.isEmpty()) {
-                        name = null;
-                    }
+                name = optionalTextFlag(flagArgs, FLAG_NAME, CARD_FIELD_FLAGS);
+                String quantityText = optionalTextFlag(flagArgs, FLAG_QUANTITY, CARD_FIELD_FLAGS);
+                if (quantityText != null) {
+                    quantity = Integer.parseInt(quantityText);
                 }
-                if (flagArgs.contains("/q")) {
-                    quantity = Integer.parseInt(flagArgs.split("/q")[1].split("/n|/p")[0].trim());
+                String priceText = optionalTextFlag(flagArgs, FLAG_PRICE, CARD_FIELD_FLAGS);
+                if (priceText != null) {
+                    price = Float.parseFloat(priceText);
                 }
-                if (flagArgs.contains("/p")) {
-                    price = Float.parseFloat(flagArgs.split("/p")[1].split("/n|/q")[0].trim());
-                }
+                cardSet = optionalTextFlag(flagArgs, FLAG_SET, CARD_FIELD_FLAGS);
+                rarity = optionalTextFlag(flagArgs, FLAG_RARITY, CARD_FIELD_FLAGS);
+                condition = optionalTextFlag(flagArgs, FLAG_CONDITION, CARD_FIELD_FLAGS);
+                language = optionalTextFlag(flagArgs, FLAG_LANGUAGE, CARD_FIELD_FLAGS);
+                cardNumber = optionalTextFlag(flagArgs, FLAG_CARD_NUMBER, CARD_FIELD_FLAGS);
             } catch (NumberFormatException e) {
                 throw new ParseInvalidArgumentException(
-                        "Quantity must be an integer and price must be float",
-                        new String[]{"edit INDEX [/n NAME] [/q QTY] [/p PRICE]"}
+                    "Quantity must be an integer and price must be float",
+                    USAGE_EDIT_COMMAND
                 );
             } catch (Exception e) {
                 throw new ParseInvalidArgumentException(
-                        "Invalid edit format",
-                        new String[]{"edit INDEX [/n NAME] [/q QTY] [/p PRICE]"}
+                    "Invalid edit format",
+                    USAGE_EDIT_COMMAND
                 );
             }
         }
 
-        if (name == null && quantity == null && price == null) {
+        if (name == null && quantity == null && price == null
+                && cardSet == null && rarity == null && condition == null
+                && language == null && cardNumber == null) {
             throw new ParseInvalidArgumentException(
-                    "At least one field (/n, /q or /p) must be provided to edit",
-                    new String[]{"edit INDEX [/n NAME] [/q QTY] [/p PRICE]"}
+                    "At least one field must be provided to edit",
+                    USAGE_EDIT_COMMAND
             );
         }
 
-        return new EditCommand(index, name, quantity, price);
+        return new EditCommand(index, name, quantity, price, cardSet, rarity, condition, language, cardNumber);
+    }
+
+    private static String requireTextFlag(String input, String flag, String[] knownFlags) {
+        String value = optionalTextFlag(input, flag, knownFlags);
+        if (value == null) {
+            throw new IllegalArgumentException("Missing required flag value for " + flag);
+        }
+        return value;
+    }
+
+    private static String optionalTextFlag(String input, String flag, String[] knownFlags) {
+        int flagIndex = indexOfFlag(input, flag);
+        if (flagIndex < 0) {
+            return null;
+        }
+
+        int valueStart = flagIndex + flag.length();
+        int nextFlagIndex = input.length();
+        for (String knownFlag : knownFlags) {
+            if (knownFlag.equals(flag)) {
+                continue;
+            }
+            int candidateIndex = indexOfFlag(input, knownFlag);
+            if (candidateIndex > flagIndex && candidateIndex < nextFlagIndex) {
+                nextFlagIndex = candidateIndex;
+            }
+        }
+
+        String value = input.substring(valueStart, nextFlagIndex).trim();
+        return value.isEmpty() ? null : value;
+    }
+
+    private static int indexOfFlag(String input, String flag) {
+        int fromIndex = 0;
+        while (fromIndex < input.length()) {
+            int candidateIndex = input.indexOf(flag, fromIndex);
+            if (candidateIndex < 0) {
+                return -1;
+            }
+
+            boolean validPrefix = candidateIndex == 0 || Character.isWhitespace(input.charAt(candidateIndex - 1));
+            int suffixIndex = candidateIndex + flag.length();
+            boolean validSuffix = suffixIndex == input.length() || Character.isWhitespace(input.charAt(suffixIndex));
+
+            if (validPrefix && validSuffix) {
+                return candidateIndex;
+            }
+
+            fromIndex = candidateIndex + 1;
+        }
+        return -1;
     }
 
     private Command handleCompare(String args) throws ParseInvalidArgumentException {

@@ -98,6 +98,25 @@ public class CardHistoryEntry {
             changedFields.put("price", change);
         }
 
+        addTextChange(changedFields, "set", previous.getCardSet(), current.getCardSet());
+        addTextChange(changedFields, "rarity", previous.getRarity(), current.getRarity());
+        addTextChange(changedFields, "condition", previous.getCondition(), current.getCondition());
+        addTextChange(changedFields, "language", previous.getLanguage(), current.getLanguage());
+        addTextChange(changedFields, "card number", previous.getCardNumber(), current.getCardNumber());
+
         return changedFields;
+    }
+
+    private static void addTextChange(LinkedHashMap<String, CardFieldChange> changedFields,
+            String fieldName, String previousValue, String currentValue) {
+        String normalizedPrevious = previousValue == null ? "" : previousValue;
+        String normalizedCurrent = currentValue == null ? "" : currentValue;
+        if (!normalizedCurrent.equals(normalizedPrevious)) {
+            changedFields.put(fieldName, new CardFieldChange(displayValue(previousValue), displayValue(currentValue)));
+        }
+    }
+
+    private static String displayValue(String value) {
+        return value == null || value.isBlank() ? "-" : value;
     }
 }
