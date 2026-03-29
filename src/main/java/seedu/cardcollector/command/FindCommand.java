@@ -13,9 +13,10 @@ public class FindCommand extends Command {
     private final String condition;
     private final String language;
     private final String cardNumber;
+    private final String tag;
 
     public FindCommand(String name, Float price, Integer quantity,
-            String cardSet, String rarity, String condition, String language, String cardNumber) {
+            String cardSet, String rarity, String condition, String language, String cardNumber, String tag) {
         this.name = name;
         this.price = price;
         this.quantity = quantity;
@@ -24,6 +25,7 @@ public class FindCommand extends Command {
         this.condition = condition;
         this.language = language;
         this.cardNumber = cardNumber;
+        this.tag = tag;
     }
 
     @Override
@@ -31,7 +33,7 @@ public class FindCommand extends Command {
         var ui = context.getUi();
         var inventory = context.getTargetList();
         ArrayList<Card> results = inventory.findCards(
-                name, price, quantity, cardSet, rarity, condition, language, cardNumber);
+                name, price, quantity, cardSet, rarity, condition, language, cardNumber, tag);
         ui.printFound(results);
         return new CommandResult(false);
     }

@@ -63,21 +63,38 @@ Permanently reorders the stored cards in your inventory or wishlist by the chose
 
 ### Listing cards: `list`
 
-Displays all cards in the current list.
+Displays all cards in the current list, or only cards with a specific tag/folder.
 
-**Format:** `list`
+**Format:** `list [/t TAG]`
+
+**Examples:**
+`list`
+`list /t sealed`
 
 ### Finding cards: `find`
 
-Searches the current list by name, price, quantity, optional metadata, or any combination of them.
+Searches the current list by name, price, quantity, optional metadata, tags/folders, or any combination of them.
 
-**Format:** `find [/n NAME] [/p PRICE] [/q QUANTITY] [/s SET] [/r RARITY] [/c CONDITION] [/l LANGUAGE] [/no CARD_NUMBER]`
+**Format:** `find [/n NAME] [/p PRICE] [/q QUANTITY] [/s SET] [/r RARITY] [/c CONDITION] [/l LANGUAGE] [/no CARD_NUMBER] [/t TAG]`
 
 **Examples:**
 `find /n pika`
 `find /p 5.99`
 `find /n charizard /q 2`
 `find /s Base Set /r Rare`
+`find /t trade`
+
+### Tagging a card: `tag` or `folder`
+
+Adds or removes an optional tag/folder label on an existing card. Tags are lightweight labels such as `deck`,
+`sealed`, or `trade`, and you can use them later with `find /t ...` or `list /t ...`.
+
+**Format:** `tag add INDEX /t TAG`
+**Format:** `tag remove INDEX /t TAG`
+
+**Examples:**
+`tag add 3 /t deck`
+`folder remove 2 /t trade`
 
 ### Removing a card by index: `removeindex`
 
@@ -179,11 +196,13 @@ Exits the application.
 | `removeindex INDEX` | Remove by index |
 | `removename NAME` | Remove by name |
 | `history [...]` | View history |
+| `tag add INDEX /t TAG` | Add tag/folder |
+| `tag remove INDEX /t TAG` | Remove tag/folder |
 | `wishlist acquired INDEX` | Move to inventory |
 | `download /f FILE_PATH` | Export data |
 | `upload /f FILE_PATH` | Import data |
 | `undoupload` | Undo upload |
 | `wishlist <command>` | Use wishlist |
-| `list` | List cards |
+| `list [/t TAG]` | List cards |
 | `find [...]` | Search cards |
 | `bye` | Exit app |

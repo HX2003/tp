@@ -1,6 +1,10 @@
 package seedu.cardcollector.card;
 
 import java.time.Instant;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.StringJoiner;
 import java.util.UUID;
 
 public class Card {
@@ -13,6 +17,7 @@ public class Card {
     private String condition;
     private String language;
     private String cardNumber;
+    private LinkedHashSet<String> tags;
     private Instant lastAdded = null;    // lastAdded is a nullable type
     private Instant lastModified = null; // lastModified is a nullable type
     private Instant lastRemoved = null;  // lastRemoved is a nullable type
@@ -27,6 +32,7 @@ public class Card {
         this.condition = builder.condition;
         this.language = builder.language;
         this.cardNumber = builder.cardNumber;
+        this.tags = new LinkedHashSet<>(builder.tags);
         this.lastAdded = builder.lastAdded;
         this.lastModified = builder.lastModified;
         this.lastRemoved = builder.lastRemoved;
@@ -42,6 +48,7 @@ public class Card {
         private String condition;
         private String language;
         private String cardNumber;
+        private LinkedHashSet<String> tags = new LinkedHashSet<>();
         private Instant lastAdded;
         private Instant lastModified;
         private Instant lastRemoved;
@@ -88,6 +95,26 @@ public class Card {
 
         public Builder cardNumber(String cardNumber) {
             this.cardNumber = cardNumber;
+            return this;
+        }
+
+        public Builder tags(Collection<String> tags) {
+            this.tags = new LinkedHashSet<>();
+            if (tags == null) {
+                return this;
+            }
+
+            for (String tag : tags) {
+                addTag(tag);
+            }
+            return this;
+        }
+
+        public Builder addTag(String tag) {
+            String normalizedTag = normalizeTag(tag);
+            if (normalizedTag != null && !containsTagIgnoreCase(tags, normalizedTag)) {
+                this.tags.add(normalizedTag);
+            }
             return this;
         }
 
@@ -189,6 +216,52 @@ public class Card {
         this.cardNumber = cardNumber;
     }
 
+    public LinkedHashSet<String> getTags() {
+        return new LinkedHashSet<>(tags);
+    }
+
+    public void setTags(Collection<String> tags) {
+        this.tags = new LinkedHashSet<>();
+        if (tags == null) {
+            return;
+        }
+
+        for (String tag : tags) {
+            addTag(tag);
+        }
+    }
+
+    public boolean addTag(String tag) {
+        String normalizedTag = normalizeTag(tag);
+        if (normalizedTag == null || containsTagIgnoreCase(tags, normalizedTag)) {
+            return false;
+        }
+        tags.add(normalizedTag);
+        return true;
+    }
+
+    public boolean removeTag(String tag) {
+        String normalizedTag = normalizeTag(tag);
+        if (normalizedTag == null) {
+            return false;
+        }
+
+        Iterator<String> iterator = tags.iterator();
+        while (iterator.hasNext()) {
+            String existingTag = iterator.next();
+            if (existingTag.equalsIgnoreCase(normalizedTag)) {
+                iterator.remove();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasTag(String tag) {
+        String normalizedTag = normalizeTag(tag);
+        return normalizedTag != null && containsTagIgnoreCase(tags, normalizedTag);
+    }
+
     public Instant getLastAdded() {
         return lastAdded;
     }
@@ -225,6 +298,7 @@ public class Card {
                 .condition(condition)
                 .language(language)
                 .cardNumber(cardNumber)
+                .tags(tags)
                 .lastAdded(lastAdded)
                 .lastModified(lastModified)
                 .lastRemoved(lastRemoved)
@@ -245,6 +319,7 @@ public class Card {
         appendMetadata(builder, "Condition", condition);
         appendMetadata(builder, "Language", language);
         appendMetadata(builder, "Card No.", cardNumber);
+        appendMetadata(builder, "Tags", formatTags(tags));
 
         return builder.toString();
     }
@@ -254,5 +329,35 @@ public class Card {
             return;
         }
         builder.append(" | ").append(label).append(": ").append(value);
+    }
+
+    private static String normalizeTag(String tag) {
+        if (tag == null) {
+            return null;
+        }
+
+        String trimmed = tag.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private static boolean containsTagIgnoreCase(Collection<String> tags, String tag) {
+        for (String existingTag : tags) {
+            if (existingTag.equalsIgnoreCase(tag)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String formatTags(Collection<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return null;
+        }
+
+        StringJoiner joiner = new StringJoiner(", ");
+        for (String tag : tags) {
+            joiner.add(tag);
+        }
+        return joiner.toString();
     }
 }

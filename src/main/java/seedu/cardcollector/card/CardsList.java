@@ -150,7 +150,7 @@ public class CardsList {
     }
 
     public ArrayList<Card> findCards(String name, Float price, Integer quantity,
-            String cardSet, String rarity, String condition, String language, String cardNumber) {
+            String cardSet, String rarity, String condition, String language, String cardNumber, String tag) {
         assert cards != null : "Cards inventory should be initialized before searching";
 
         ArrayList<Card> results = new ArrayList<>();
@@ -178,6 +178,9 @@ public class CardsList {
                 matches = false;
             }
             if (!containsIgnoreCase(card.getCardNumber(), cardNumber)) {
+                matches = false;
+            }
+            if (!containsTagIgnoreCase(card, tag)) {
                 matches = false;
             }
             if (matches) {
@@ -271,6 +274,36 @@ public class CardsList {
         return quantityChanged || anyFieldChanged;
     }
 
+    public boolean addTag(int index, String tag) {
+        assert index >= 0 && index < cards.size() : "Index should be validated before calling addTag";
+
+        Card card = cards.get(index);
+        Card originalCard = card.copy();
+        boolean changed = card.addTag(tag);
+        if (!changed) {
+            return false;
+        }
+
+        card.setLastModified(Instant.now());
+        history.add(originalCard, card.copy());
+        return true;
+    }
+
+    public boolean removeTag(int index, String tag) {
+        assert index >= 0 && index < cards.size() : "Index should be validated before calling removeTag";
+
+        Card card = cards.get(index);
+        Card originalCard = card.copy();
+        boolean changed = card.removeTag(tag);
+        if (!changed) {
+            return false;
+        }
+
+        card.setLastModified(Instant.now());
+        history.add(originalCard, card.copy());
+        return true;
+    }
+
     private static boolean isSameCardVariant(Card first, Card second) {
         return first.getName().equalsIgnoreCase(second.getName())
                 && first.getPrice() == second.getPrice()
@@ -289,6 +322,13 @@ public class CardsList {
             return false;
         }
         return actualValue.toLowerCase(Locale.ROOT).contains(expectedFragment.toLowerCase(Locale.ROOT));
+    }
+
+    private static boolean containsTagIgnoreCase(Card card, String expectedTag) {
+        if (expectedTag == null) {
+            return true;
+        }
+        return card.hasTag(expectedTag);
     }
 
     private static boolean isUpdatedTextValue(String candidate, String currentValue) {
