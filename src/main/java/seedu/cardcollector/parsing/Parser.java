@@ -12,6 +12,7 @@ import seedu.cardcollector.command.EditCommand;
 import seedu.cardcollector.command.ExitCommand;
 import seedu.cardcollector.command.FindCommand;
 import seedu.cardcollector.command.HistoryCommand;
+import seedu.cardcollector.command.HelpCommand;
 import seedu.cardcollector.command.ListCommand;
 import seedu.cardcollector.command.RemoveCardByIndexCommand;
 import seedu.cardcollector.command.RemoveCardByNameCommand;
@@ -38,6 +39,7 @@ public class Parser {
     private static final String FLAG_CARD_NUMBER = "/no";
     private static final String FLAG_ID = "/id";
     private static final String FLAG_TAG = "/t";
+    private static final String FLAG_HELP = "/h";
     private static final String[] CARD_FIELD_FLAGS = {
         FLAG_NAME, FLAG_QUANTITY, FLAG_PRICE, FLAG_SET, FLAG_RARITY, FLAG_CONDITION, FLAG_LANGUAGE, FLAG_CARD_NUMBER,
         FLAG_TAG
@@ -66,6 +68,7 @@ public class Parser {
     private static final String KEYWORD_FOLDER_COMMAND = "folder";
     private static final String KEYWORD_ANALYTICS_COMMAND = "analytics";
     private static final String KEYWORD_STATS_COMMAND = "stats";
+    private static final String KEYWORD_HELP_COMMAND = "help";
 
     private static final String[] USAGE_REORDER_COMMAND = {
         "reorder CRITERIA [asc|desc]",
@@ -128,46 +131,114 @@ public class Parser {
         String commandKeyword = parts[0].toLowerCase();
         String arguments = parts.length > 1 ? parts[1] : "";
 
+        if (commandKeyword.equals(KEYWORD_HELP_COMMAND)) {
+            return handleHelp(arguments);
+        }
+
         switch (commandKeyword) {
         case KEYWORD_HISTORY_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleHistory(arguments);
         case KEYWORD_ADD_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleAdd(arguments);
         case KEYWORD_REMOVE_INDEX_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleRemoveByIndex(arguments);
         case KEYWORD_REMOVE_NAME_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleRemoveByName(arguments);
         case KEYWORD_FIND_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleFind(arguments);
         case KEYWORD_LIST_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleList(arguments);
         case KEYWORD_EXIT_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleExit(arguments);
         case KEYWORD_EDIT_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleEdit(arguments);
         case KEYWORD_COMPARE_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleCompare(arguments);
         case KEYWORD_DOWNLOAD_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleDownload(arguments);
         case KEYWORD_UPLOAD_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleUpload(arguments);
         case KEYWORD_UNDO_UPLOAD_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleUndoUpload(arguments);
         case KEYWORD_ACQUIRED_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleAcquired(arguments);
         case KEYWORD_REORDER_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleReorder(arguments);
         case KEYWORD_UNDO_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleUndo(arguments);
         case KEYWORD_TAG_COMMAND:
         case KEYWORD_FOLDER_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleTag(arguments);
         case KEYWORD_ANALYTICS_COMMAND:
         case KEYWORD_STATS_COMMAND:
+            if (isInlineHelpRequest(arguments)) {
+                return HelpCommand.forKeyword(commandKeyword);
+            }
             return handleAnalytics(arguments);
+        case KEYWORD_HELP_COMMAND:
+            return handleHelp(arguments);
         default:
             throw new ParseUnknownCommandException(commandKeyword);
         }
+    }
+
+    private Command handleHelp(String arguments) {
+        if (arguments.isBlank()) {
+            return HelpCommand.overview();
+        }
+        return HelpCommand.forQuery(arguments);
+    }
+
+    private boolean isInlineHelpRequest(String arguments) {
+        return arguments.trim().equals(FLAG_HELP);
     }
 
     private Command handleAnalytics(String arguments) throws ParseInvalidArgumentException {

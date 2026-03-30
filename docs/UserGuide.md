@@ -14,6 +14,18 @@ language, and card number, plus timestamps used by the history commands.
 
 ## Features
 
+### Getting help: `help` or `/h`
+
+Lists all available commands in a compact reference view, or shows detailed syntax for a specific command.
+
+**Format:** `help [COMMAND]`
+**Format:** `COMMAND /h`
+
+**Examples:**
+`help`
+`help add`
+`find /h`
+
 ### Adding a card: `add`
 
 Adds a new card to the current list.
@@ -213,6 +225,7 @@ Exits the application.
 | `tag remove INDEX /t TAG` | Remove tag/folder |
 | `wishlist acquired INDEX` | Move to inventory |
 | `analytics` | Show list insights |
+| `help [COMMAND]` | Show command help |
 | `download /f FILE_PATH` | Export data |
 | `upload /f FILE_PATH` | Import data |
 | `undoupload` | Undo upload |

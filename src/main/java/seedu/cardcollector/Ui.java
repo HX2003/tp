@@ -7,19 +7,20 @@ import seedu.cardcollector.card.CardHistoryEntry;
 import seedu.cardcollector.card.CardHistoryType;
 import seedu.cardcollector.card.CardsAnalytics;
 import seedu.cardcollector.card.CardsList;
+import seedu.cardcollector.command.HelpTopic;
 
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
-import java.time.format.DateTimeFormatter;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Locale;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Ui {
     private static final String FORMAT_UNKNOWN_COMMAND = "Unknown command \"%1$s\" entered%n";
@@ -98,6 +99,43 @@ public class Ui {
     public void printBlankCommandWarning() {
         printBorder();
         out.printf(FORMAT_BLANK_COMMAND);
+        printBorder();
+    }
+
+    public void printHelpOverview(List<HelpTopic> topics, String query) {
+        printBorder();
+        if (query == null || query.isBlank()) {
+            out.println("CardCollector commands:");
+        } else {
+            out.println("Help matches for \"" + query + "\":");
+        }
+        for (HelpTopic topic : topics) {
+            out.println(topic.getDisplayName() + " - " + topic.summary());
+        }
+        out.println("Run \"help COMMAND\" or \"COMMAND /h\" for syntax details.");
+        printBorder();
+    }
+
+    public void printHelpTopic(HelpTopic topic) {
+        printBorder();
+        out.println("Command: " + topic.name());
+        if (!topic.aliases().isEmpty()) {
+            out.println("Aliases: " + String.join(", ", topic.aliases()));
+        }
+        out.println("Summary: " + topic.summary());
+        out.println("Syntax:");
+        for (int i = 0; i < topic.usage().length; i++) {
+            String label = i == 0 ? "Usage" : "Example";
+            out.println(label + ": " + topic.usage()[i]);
+        }
+        out.println("Run \"" + topic.name() + " /h\" to show this again.");
+        printBorder();
+    }
+
+    public void printHelpNotFound(String query) {
+        printBorder();
+        out.println("No help entries matched \"" + query + "\".");
+        out.println("Run \"help\" to list all commands.");
         printBorder();
     }
 

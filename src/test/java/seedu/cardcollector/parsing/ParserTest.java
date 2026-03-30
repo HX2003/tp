@@ -11,6 +11,7 @@ import seedu.cardcollector.command.Command;
 import seedu.cardcollector.command.DownloadCommand;
 import seedu.cardcollector.command.FindCommand;
 import seedu.cardcollector.command.UploadCommand;
+import seedu.cardcollector.command.HelpCommand;
 import seedu.cardcollector.command.UndoUploadCommand;
 import seedu.cardcollector.command.ListCommand;
 import seedu.cardcollector.command.TagCommand;
@@ -232,6 +233,16 @@ public class ParserTest {
                 ParseInvalidArgumentException.class,
                 () -> parser.parse("undoupload now")
         );
+    }
+
+    @Test
+    public void parse_helpCommand_success() throws Exception {
+        assertInstanceOf(HelpCommand.class, parser.parse("help"));
+        assertInstanceOf(HelpCommand.class, parser.parse("help add"));
+        assertInstanceOf(HelpCommand.class, parser.parse("help trade"));
+        assertInstanceOf(HelpCommand.class, parser.parse("add /h"));
+        assertInstanceOf(HelpCommand.class, parser.parse("folder /h"));
+        assertInstanceOf(HelpCommand.class, parser.parse("stats /h"));
     }
 
     @Test

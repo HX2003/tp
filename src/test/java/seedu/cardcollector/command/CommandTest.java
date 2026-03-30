@@ -10,7 +10,6 @@ import seedu.cardcollector.card.CardsHistory;
 import seedu.cardcollector.card.CardsList;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.ByteArrayOutputStream;
 
@@ -20,14 +19,18 @@ import java.util.Stack;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class CommandTest {
     private CommandContext createCommandContext() {
+        return createCommandContext(new ByteArrayOutputStream());
+    }
+
+    private CommandContext createCommandContext(ByteArrayOutputStream outputStream) {
         CardsList inventory = new CardsList();
         CardsList wishlist = new CardsList();
 
-        OutputStream outputStream = new ByteArrayOutputStream();
         InputStream inputStream = System.in;
         PrintStream printStream = new PrintStream(outputStream);
         Ui ui = new Ui(inputStream, printStream);
@@ -249,5 +252,20 @@ public class CommandTest {
         assertEquals(CardHistoryType.REMOVED, entry7.getCardHistoryType());
         assertEquals("MyCard", entry7.getMostRecent().getName());
         assertEquals(-5, entry7.getChangedQuantity());
+    }
+
+    @Test
+    public void execute_helpCommand_printsOverviewWithoutSaving() {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        CommandContext commandContext = createCommandContext(outputStream);
+
+        CommandResult result = HelpCommand.overview().execute(commandContext);
+
+        String output = outputStream.toString();
+        assertFalse(result.getIsExit());
+        assertFalse(result.shouldSave());
+        assertTrue(output.contains("CardCollector commands:"));
+        assertTrue(output.contains("add - add a new card to the current list"));
+        assertTrue(output.contains("help COMMAND"));
     }
 }
