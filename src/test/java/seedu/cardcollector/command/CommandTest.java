@@ -254,6 +254,7 @@ public class CommandTest {
         assertEquals(-5, entry7.getChangedQuantity());
     }
 
+    //@@author Simplificatedd
     @Test
     public void execute_helpCommand_printsOverviewWithoutSaving() {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
