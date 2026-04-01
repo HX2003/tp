@@ -137,12 +137,69 @@ public class CardsList {
         double totalValue = 0;
         Map<String, Integer> setCounts = new HashMap<>();
 
+        double highestPrice = Double.MIN_VALUE;
+        double lowestPrice = Double.MAX_VALUE;
+        int highestQuantity = Integer.MIN_VALUE;
+        int lowestQuantity = Integer.MAX_VALUE;
+        int cardsWithNotes = 0;
+        int cardsWithSet = 0;
+        int cardsWithTags = 0;
+        int expensiveCardCount = 0;
+        int zeroPriceCardCount = 0;
+
         for (Card card : cards) {
             totalQuantity += card.getQuantity();
             totalValue += card.getPrice() * card.getQuantity();
 
             String normalizedSetName = normalizeSetName(card.getCardSet());
             setCounts.merge(normalizedSetName, card.getQuantity(), Integer::sum);
+
+            if (card.getPrice() > highestPrice) {
+                highestPrice = card.getPrice();
+            }
+
+            if (card.getPrice() < lowestPrice) {
+                lowestPrice = card.getPrice();
+            }
+
+            if (card.getQuantity() > highestQuantity) {
+                highestQuantity = card.getQuantity();
+            }
+
+            if (card.getQuantity() < lowestQuantity) {
+                lowestQuantity = card.getQuantity();
+            }
+
+            if (card.getNote() != null && !card.getNote().isBlank()) {
+                cardsWithNotes++;
+            }
+
+            if (card.getCardSet() != null && !card.getCardSet().isBlank()) {
+                cardsWithSet++;
+            }
+
+            if (card.getTags() != null && !card.getTags().isEmpty()) {
+                cardsWithTags++;
+            }
+
+            if (card.getPrice() > 100) {
+                expensiveCardCount++;
+            }
+
+            if (card.getPrice() == 0) {
+                zeroPriceCardCount++;
+            }
+        }
+
+        double averagePrice = cards.isEmpty() ? 0 : totalValue / totalQuantity;
+        double averageEntryValue = cards.isEmpty() ? 0 : totalValue / cards.size();
+        double averageQuantity = cards.isEmpty() ? 0 : (double) totalQuantity / cards.size();
+
+        if (cards.isEmpty()) {
+            highestPrice = 0;
+            lowestPrice = 0;
+            highestQuantity = 0;
+            lowestQuantity = 0;
         }
 
         ArrayList<CardsAnalytics.CardMetric> mostExpensiveCards = cards.stream()

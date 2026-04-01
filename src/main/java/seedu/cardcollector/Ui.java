@@ -338,6 +338,42 @@ public class Ui {
         out.println("Total quantity: " + analytics.getTotalQuantity());
         out.println("Total value: $" + formatMoney(analytics.getTotalValue()));
 
+        if (analytics.getDistinctCards() > 0) {
+            double averageQuantityPerCard = (double) analytics.getTotalQuantity() / analytics.getDistinctCards();
+            double averageValuePerCard = analytics.getTotalValue() / analytics.getDistinctCards();
+            double averageValuePerUnit = analytics.getTotalQuantity() == 0
+                    ? 0
+                    : analytics.getTotalValue() / analytics.getTotalQuantity();
+
+            out.println("Average quantity per distinct card: " + String.format(Locale.ROOT, "%.2f", averageQuantityPerCard));
+            out.println("Average value per distinct card: $" + formatMoney(averageValuePerCard));
+            out.println("Average value per unit: $" + formatMoney(averageValuePerUnit));
+        } else {
+            out.println("Average quantity per distinct card: 0.00");
+            out.println("Average value per distinct card: $0.00");
+            out.println("Average value per unit: $0.00");
+        }
+
+        if (analytics.getTotalValue() >= 1000) {
+            out.println("Collection tier: High value");
+        } else if (analytics.getTotalValue() >= 500) {
+            out.println("Collection tier: Mid value");
+        } else if (analytics.getTotalValue() > 0) {
+            out.println("Collection tier: Starter");
+        } else {
+            out.println("Collection tier: Empty");
+        }
+
+        if (analytics.getTotalQuantity() >= 100) {
+            out.println("Collection size: Large");
+        } else if (analytics.getTotalQuantity() >= 30) {
+            out.println("Collection size: Medium");
+        } else if (analytics.getTotalQuantity() > 0) {
+            out.println("Collection size: Small");
+        } else {
+            out.println("Collection size: Empty");
+        }
+
         printMostExpensiveCards(analytics.getMostExpensiveCards());
         printTopSets(analytics.getTopSetsByCount());
         printBorder();
