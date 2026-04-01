@@ -6,7 +6,8 @@ skinparam nodesep 100
 skinparam SameClassWidth true
 hide empty members
 
-class CardsList CARDSLIST_COLOR_PRIMARY
+class CardsList CARDS_COLOR_PRIMARY
+class \n\nCard\n\n CARDS_COLOR_PRIMARY
 
 CardsList -right--> "         1 "/"history" CardsHistory
 
