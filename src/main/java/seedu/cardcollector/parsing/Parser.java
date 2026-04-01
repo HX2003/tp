@@ -82,7 +82,9 @@ public class Parser {
     };
 
     private static final String[] USAGE_LIST_COMMAND = {
-        "list [NUMBER | all] [index | name | quantity | price | set | rarity | condition | language | number | added | modified | removed] [ascending | descending]",
+        "list [NUMBER | all] [index | name | quantity | price |" +
+                " set | rarity | condition | language | number | added | modified | removed] " +
+                "[ascending | descending]",
         "list",
         "list 50 quantity ascending"
     };
