@@ -3,29 +3,48 @@
 ## Table of Contents
 - [Acknowledgements](#acknowledgements)
 - [Design & Implementation](#design--implementation)
-  - [Add Feature](#add-feature)
-    - [Architecture-level](#architecture-level)
-    - [Implementation](#implementation)
-    - [Class Diagram](#class-diagram)
-  - [Edit Feature](#edit-feature)
-    - [Architecture-level](#architecture-level-1)
-    - [Implementation](#implementation-key-code-snippets-1)
-    - [Sequence Diagram](#sequence-diagram-edit-1-n-dragonite-q-3)
-  - [Undo Feature](#undo-feature)
-    - [Architecture-level](#architecture-level-2)
-    - [Implementation](#implementation-key-code-snippets-2)
-    - [Sequence Diagram](#sequence-diagram)
-  - [List Feature](#list-feature)
-  - [History Feature](#history-feature)
-  - [Wishlist Feature](#wishlist-feature)
-    - [Architecture-level](#architecture-level-3)
-    - [Implementation](#implementation-key-code-snippets-3)
-    - [Class Diagram](#class-diagram-2)
-    - [Sequence Diagram](#sequence-diagram-wishlist-add-example)
-  - [Disambiguator](#disambiguator)
+    - [Add Feature](#add-feature)
+        - [Architecture-level](#architecture-level)
+        - [Implementation](#implementation)
+        - [Class Diagram](#class-diagram)
+        - [Sequence Diagram](#sequence-diagram-add-n-pikachu-q-2-p-2550)
+    - [Edit Feature](#edit-feature)
+        - [Architecture-level](#architecture-level-1)
+        - [Implementation](#implementation-key-code-snippets-1)
+        - [Sequence Diagram](#sequence-diagram-edit-1-n-dragonite-q-3)
+    - [Undo Feature](#undo-feature)
+        - [Architecture-level](#architecture-level-2)
+        - [Implementation](#implementation-key-code-snippets-2)
+        - [Sequence Diagram](#sequence-diagram)
+    - [List Feature](#list-feature)
+        - [Implementation](#implementation-1)
+        - [Design decisions](#design-decisions)
+    - [Duplicates Feature](#duplicates-feature)
+        - [Architecture-level](#architecture-level-3)
+        - [Implementation](#implementation-2)
+        - [Design decisions](#design-decisions-1)
+    - [Find Feature](#find-feature)
+        - [Architecture-level](#architecture-level-4)
+        - [Implementation](#implementation-3)
+        - [Design decisions](#design-decisions-2)
+    - [Filter Feature](#filter-feature)
+        - [Architecture-level](#architecture-level-5)
+        - [Implementation](#implementation-4)
+        - [Design decisions](#design-decisions-3)
+    - [Tag Feature](#tag-feature)
+        - [Architecture-level](#architecture-level-6)
+        - [Implementation](#implementation-5)
+        - [Design decisions](#design-decisions-4)
+    - [History Feature](#history-feature)
+    - [Wishlist Feature](#wishlist-feature)
+        - [Architecture-level](#architecture-level-7)
+        - [Implementation](#implementation-key-code-snippets-3)
+        - [Class Diagram](#class-diagram-2)
+        - [Sequence Diagram](#sequence-diagram-wishlist-add-example)
+    - [Disambiguator](#disambiguator)
 - [Appendix: Product Scope](#appendix-product-scope)
-  - [Target User Profile](#target-user-profile)
-  - [Value Proposition](#value-proposition)
+    - [Target User Profile](#target-user-profile)
+    - [Value Proposition](#value-proposition)
 - [Appendix: User Stories](#appendix-user-stories)
 - [Appendix: Non-Functional Requirements](#appendix-non-functional-requirements)
 - [Appendix: Glossary](#appendix-glossary)
@@ -33,6 +52,8 @@
 
 ## Acknowledgements
 - For the PlantUML styling, we adapted from [addressbook-level3](https://github.com/se-edu/addressbook-level3/blob/master/docs/diagrams/style.puml).
+- Base structure adapted from AddressBook-Level3:
+  https://github.com/se-edu/addressbook-level3
 
 {list here sources of all reused/adapted ideas, code, documentation, and third-party libraries -- include links to the original source as well}
 
@@ -89,6 +110,9 @@ private static boolean isSameCardVariant(Card first, Card second) {
             && normalized(first.getCardNumber()).equals(normalized(second.getCardNumber()));
 }
 ```
+- The `/nt` flag allows storing additional notes for a card.
+- Notes are stored as an optional field in `Card`.
+- Notes are not part of duplicate detection. As a result, two cards with the same variant fields but different notes are still treated according to the existing `isSameCardVariant(...)` comparison logic.
 
 #### Class Diagram
 <img src="images/AddCommandClassDiagram.svg" width="900" />
@@ -96,14 +120,14 @@ private static boolean isSameCardVariant(Card first, Card second) {
 
 ### Edit Feature
 
-The `edit` command allows users to change the name, quantity, or price of any card in the list.
+The `edit` command allows users to change the name, quantity, price, notes, and optional metadata fields of any card in the list.
 
 #### Architecture-level
 When the user types `edit 1 /n Dragonite /q 3`:
 1. `Ui` reads the raw input.
 2. `CardCollector` passes the input to `Parser`.
 3. `Parser` creates an `EditCommand` object.
-4. `CardCollector` calls `execute()` on the command, passing the correct `CardsList`.
+4. `CardCollector` creates a `CommandContext` and calls `execute(context)` on the command.
 5. The card is updated and the UI shows the new list.
 
 #### Implementation (key code snippets)
@@ -116,30 +140,31 @@ int index = Integer.parseInt(parts[0].trim()) - 1;
 
 String flagArgs = parts.length > 1 ? parts[1] : "";
 
-String name = null;
-Integer quantity = null;
-Float price = null;
+String name = extractOptionalFlag(flagArgs, "/n");
+Integer quantity = extractOptionalInteger(flagArgs, "/q");
+Float price = extractOptionalFloat(flagArgs, "/p");
+String cardSet = extractOptionalFlag(flagArgs, "/s");
+String rarity = extractOptionalFlag(flagArgs, "/r");
+String condition = extractOptionalFlag(flagArgs, "/c");
+String language = extractOptionalFlag(flagArgs, "/l");
+String cardNumber = extractOptionalFlag(flagArgs, "/no");
+String note = extractOptionalFlag(flagArgs, "/nt");
 
-if (flagArgs.contains("/n")) {
-    name = flagArgs.split("/n")[1].split("/q|/p")[0].trim();
-}
-if (flagArgs.contains("/q")) {
-    quantity = Integer.parseInt(flagArgs.split("/q")[1].split("/n|/p")[0].trim());
-}
-if (flagArgs.contains("/p")) {
-    price = Float.parseFloat(flagArgs.split("/p")[1].split("/n|/q")[0].trim());
+if (allFieldsAreNull(name, quantity, price, cardSet, rarity, condition, language, cardNumber, note)) {
+        throw new ParseInvalidArgumentException(...);
 }
 
-if (name == null && quantity == null && price == null) {
-    throw new ParseInvalidArgumentException(...);
-}
-return new EditCommand(index, name, quantity, price);
+        return new EditCommand(index, name, quantity, price,
+                               cardSet, rarity, condition, language, cardNumber, note);
 ```
 
 **Core editing logic** in `CardsList.java`:
 
 ```java
-public void editCard(int index, String newName, Integer newQuantity, Float newPrice) {
+public boolean editCard(int index, String newName, Integer newQuantity, Float newPrice,
+                        String newCardSet, String newRarity, String newCondition,
+                        String newLanguage, String newCardNumber, String newNote) {
+
     Card card = cards.get(index);
     Instant currentInstant = Instant.now();
     boolean anyChange = false;
@@ -156,10 +181,36 @@ public void editCard(int index, String newName, Integer newQuantity, Float newPr
         card.setPrice(newPrice);
         anyChange = true;
     }
+    if (newCardSet != null) {
+        card.setCardSet(newCardSet);
+        anyChange = true;
+    }
+    if (newRarity != null) {
+        card.setRarity(newRarity);
+        anyChange = true;
+    }
+    if (newCondition != null) {
+        card.setCondition(newCondition);
+        anyChange = true;
+    }
+    if (newLanguage != null) {
+        card.setLanguage(newLanguage);
+        anyChange = true;
+    }
+    if (newCardNumber != null) {
+        card.setCardNumber(newCardNumber);
+        anyChange = true;
+    }
+    if (newNote != null) {
+        card.setNote(newNote);
+        anyChange = true;
+    }
 
     if (anyChange) {
         card.setLastModified(currentInstant);
     }
+
+    return anyChange;
 }
 ```
 
@@ -261,7 +312,16 @@ If the `lastCommand` was an:
 
 
 ### List Feature
-This feature lists all cards in the current list in a sorted order.
+
+This feature displays cards in the current list in a sorted order.
+
+#### Implementation
+- Users can specify how many cards to display, the sort field, and the sort direction.
+- If no arguments are provided, cards are listed by index in ascending order.
+
+#### Design decisions
+- Fuzzy argument matching allows faster typing for experienced CLI users.
+- Sorting is kept read-only so listing never mutates stored card data.
 
 #### List Command
 By default, the displayed list is sorted by index in ascending order.
@@ -282,6 +342,84 @@ When the user types `list 50 quantity descending`:
 
 <img src="images/CardSorterClassDiagram.svg" width="350" />
 
+### Duplicates Feature
+
+The `duplicates` command displays cards in the current list that appear to be duplicates.
+
+#### Architecture-level
+1. `Parser` creates a `DuplicatesCommand`.
+2. `CardCollector` creates a `CommandContext` and executes the command.
+3. `DuplicatesCommand` retrieves duplicate cards from the active `CardsList`.
+4. `Ui` prints the duplicate subset.
+
+#### Implementation
+- The feature reuses the same card-variant comparison logic used by the add feature.
+- This ensures duplicate detection is consistent with add-merge behaviour.
+- The command is read-only and does not mutate any stored data.
+
+#### Design decisions
+- Reusing existing comparison logic avoids having two definitions of what counts as the “same” card.
+- Making the command read-only means it does not need undo support.
+
+### Find Feature
+
+The `find` command searches the current list using one or more optional filters.
+
+#### Architecture-level
+1. The user enters a `find` command with any combination of supported flags.
+2. `Parser` extracts all provided fields and creates a `FindCommand`.
+3. `CardCollector` executes the command using `CommandContext`.
+4. `FindCommand` filters the active `CardsList`.
+5. Matching cards are displayed by `Ui`.
+
+#### Implementation
+- Supported filters include name, quantity, price, metadata fields, notes, and tags.
+- All provided conditions are combined using logical AND.
+- String comparisons are case-insensitive to make search more user-friendly.
+
+#### Design decisions
+- Keeping `find` flag-based makes it consistent with `add` and `edit`.
+- Allowing multiple simultaneous filters reduces the need for repeated commands.
+
+### Filter Feature
+
+The `filter` command displays cards filtered by tag.
+
+#### Architecture-level
+1. `Parser` checks whether the command includes `/t TAG`.
+2. If a tag is provided, a tagged filter command is created.
+3. Otherwise, a no-argument filter command is created.
+4. The command is executed on the active `CardsList`.
+5. `Ui` displays the resulting list.
+
+#### Implementation
+- `filter /t TAG` returns only cards that contain the specified tag.
+- `filter` with no tag displays the full list without applying a tag filter.
+- Tag comparison is case-insensitive.
+
+#### Design decisions
+- `filter` is kept separate from `find` because tag filtering is common and deserves a faster workflow.
+- The command is read-only and therefore does not participate in undo.
+
+### Tag Feature
+
+The `tag` command adds or removes labels from a card.
+
+#### Architecture-level
+1. `Parser` detects whether the operation is `tag add` or `tag remove`.
+2. It extracts the target index and tag value.
+3. A `TagCommand` is created.
+4. `CardCollector` executes it through `CommandContext`.
+5. The card is updated and the resulting list is printed.
+
+#### Implementation
+- Tags are stored as part of the `Card`.
+- The same feature also supports the alias command `folder`.
+- Tag mutations create history entries because they modify card state.
+
+#### Design decisions
+- Tags provide lightweight organisation without needing a more complex categorisation model.
+- Tag changes are reversible, so `undo` can restore the previous state.
 
 ### History Feature
 The cards history is a log of when cards were added, modified, or removed.
@@ -351,7 +489,11 @@ if (input.toLowerCase().startsWith("wishlist ")) {
 
 Command command = parser.parse(parseInput);
 CardsList targetList = isWishlistCommand ? wishlist : inventory;
-CommandResult result = command.execute(ui, targetList);
+
+CommandContext context = new CommandContext(
+        ui, targetList, inventory, wishlist, storage, uploadUndoState, commandHistory);
+
+CommandResult result = command.execute(context);
 ```
 
 **Generic `printList` method** in `Ui.java` (used by both lists):
@@ -444,7 +586,6 @@ Given below are instructions to test the app manually.
 5. Test case : `add /n Mewtwo /q 1 /p -5.50`  
    Expected: No card added. Error details shows price cannot be negative
 
-
 ### Undo a add/remove/edit
 1. Prerequisites: A add/remove/edit command must be entered before this
 2. Test case: `add /n Pikachu EX /q 3 /p 195.50` + `undo`  
@@ -453,3 +594,35 @@ Given below are instructions to test the app manually.
    Expected: A new card is added, quantity is increased then quantity is decreased back to original amount.
 4. Test case: `undo` (without any prior [reversible command](#reversible-commands))  
    Expected: Nothing happens. Error details show Nothing to Undo.
+
+### Finding duplicates
+1. Prerequisites: Add two cards with identical variant fields.
+2. Test case: `duplicates`
+   Expected: The duplicate cards are shown in the output.
+3. Test case: `wishlist duplicates`
+   Expected: Only duplicates in the wishlist are shown.
+
+### Finding cards
+1. Prerequisites: At least one card exists with a note and tag.
+2. Test case: `find /n Pikachu`
+   Expected: Cards whose names match `Pikachu` are listed.
+3. Test case: `find /nt trader`
+   Expected: Cards whose notes contain `trader` are listed.
+4. Test case: `find /t trade`
+   Expected: Cards tagged `trade` are listed.
+
+### Filtering cards
+1. Prerequisites: At least one card has a tag.
+2. Test case: `filter /t sealed`
+   Expected: Only cards tagged `sealed` are shown.
+3. Test case: `filter`
+   Expected: The full current list is shown.
+
+### Tagging cards
+1. Prerequisites: At least one card exists.
+2. Test case: `tag add 1 /t deck`
+   Expected: The first card now contains the `deck` tag.
+3. Test case: `tag remove 1 /t deck`
+   Expected: The `deck` tag is removed from the first card.
+4. Test case: `tag add 1 /t trade` + `undo`
+   Expected: The tag addition is reverted.
