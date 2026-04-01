@@ -44,15 +44,17 @@ public class Disambiguator {
         }
 
         // Multiple matches implies ambiguity
-        StringBuilder builder = new StringBuilder("did you mean: ");
+        StringBuilder builder = new StringBuilder("did you mean ");
 
         for (int i = 0; i < matches.size(); i++) {
-            builder.append(matches.get(0));
+            builder.append("\"");
+            builder.append(matches.get(i));
+            builder.append("\"");
 
-            if (i == matches.size() - 1) {
-                builder.append("or");
-            } else if (i < matches.size() - 1) {
-                builder.append(",");
+            if (i == matches.size() - 2) {
+                builder.append(" or ");
+            } else if (i < matches.size() - 2) {
+                builder.append(", ");
             }
         }
 
