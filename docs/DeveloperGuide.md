@@ -527,17 +527,17 @@ The exception to this is the `clear` command which clears the history
 Whenever an `add`, `edit`, `remove*`, `tag` or any other command that changes the inventory list is executed
 1. A copy of the previous version of the card before any changes is created (if any, `null` otherwise), and
    a copy of the current version of the card after the changes is created (if any, `null` otherwise).
-2. These two cards are passed to the `add` method of `CardsHistory`, in which a `CardHistoryEntry` is created.
+2. These two cards are passed to the `add` method of `CardsHistory`, which creates a `CardHistoryEntry`.
 
 Note: a conflict arises when `edit` command both changes the quantity and other fields like the name,
 in such a case the `add` method of `CardsHistory` will be called twice,
 one for change in quantity, and the other for the change in the other fields.
 
 #### Class Diagram
-<img src="images/HistoryClassDiagram.svg" width="800" />
+<img src="images/HistoryClassDiagram.svg" width="600" />
 
 #### Sequence Diagram for Adding History Entry
-<img src="images/HistoryAddSequenceDiagram.svg" width="600" />
+<img src="images/HistoryAddSequenceDiagram.svg" width="800" />
 
 #### History Command
 The `history` command simply displays the historical log that were generated when other commands were executed.
