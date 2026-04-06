@@ -526,8 +526,10 @@ The exception to this is the `clear` command which clears the history
 #### Architecture Level
 Whenever an `add`, `edit`, `remove*`, `tag` or any other command that changes the inventory list is executed
 1. A copy of the previous version of the card before any changes is created (if any, `null` otherwise), and
-   a copy of the current version of the card after the changes is created (if any, `null` otherwise).
-2. These two cards are passed to the `add` method of `CardsHistory`, which creates a `CardHistoryEntry`.
+    a copy of the current version of the card after the changes is created (if any, `null` otherwise).
+2. These 2 cards are passed to the `add` method of `CardsHistory`, which creates a `CardHistoryEntry`.
+    The `CardHistoryType` of the entry will be determined based on the content differences between the 2 cards.
+3. `CardFieldChange` is only computed when needed i.e. for `history` command since it needs to print what changed.
 
 Note: a conflict arises when `edit` command both changes the quantity and other fields like the name,
 in such a case the `add` method of `CardsHistory` will be called twice,
@@ -540,8 +542,8 @@ one for change in quantity, and the other for the change in the other fields.
 <img src="images/HistoryAddSequenceDiagram.svg" width="800" />
 
 #### History Command
-The `history` command simply displays the historical log that were generated when other commands were executed.
-As such, this command itself does not change or mutate any data.
+The `history` command displays the contents of the `CardsHistory` which was previously populated by other commands.
+While this command itself does not mutate any existing data, it uses `CardFieldChange` on the fly to identify and print exactly what changed in each historical entry.
 The parsing of this command uses the [Disambiguator](#parser-disambiguator) to support fuzzy arguments.
 
 To model the interactions that occur when the user issues the command `history all added`, below is a *Sequence Diagram* to illustrate it.
