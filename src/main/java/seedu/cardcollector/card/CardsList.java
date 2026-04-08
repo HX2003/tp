@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 public class CardsList {
@@ -511,14 +512,21 @@ public class CardsList {
             return;
         }
 
-        Comparator<Card> comparator = CardSorter.getSortComparator(criteria);
-        assert comparator != null : "No available comparator for criteria";
-
-        if (!isAscending) {
-            comparator = comparator.reversed();
+        if (criteria == CardSortCriteria.INDEX && !isAscending) {
+            Collections.reverse(cards);
         }
 
-        cards.sort(comparator);
+        if (criteria != CardSortCriteria.INDEX) {
+            Comparator<Card> comparator = CardSorter.getSortComparator(criteria);
+
+            assert comparator != null : "No available comparator for criteria";
+
+            if (!isAscending) {
+                comparator = comparator.reversed();
+            }
+
+            cards.sort(comparator);
+        }
 
         assert cards.size() > 0 : "List should not be empty if it wasn't before reorder";
     }
