@@ -129,4 +129,28 @@ public class CardSorterTest {
         assertEquals(oldestCard, resultsDescending.get(2));
         assertEquals(unspecifiedCard, resultsDescending.get(3));
     }
+
+    @Test
+    public void sort_byName_success() {
+        ArrayList<Card> cards = new ArrayList<>();
+
+        Card.Builder commonBuilder = new Card.Builder()
+                .price(1.00f)
+                .quantity(1);
+
+        String[] names = {"a", "ab", "aB", "ac", "A", "AB", "Ab", "C", "c", "d", "D"};
+        String[] namesSortedExpected = {"a", "A", "ab", "aB", "AB", "Ab", "ac", "C", "c", "d", "D"};
+
+        for (String name: names) {
+            Card card = commonBuilder.name(name).build();
+            cards.add(card);
+        }
+
+        ArrayList<Card> resultsAscending = CardSorter.sort(
+                cards, CardSortCriteria.NAME, -1, Integer.MAX_VALUE, false);
+
+        for (int i = 0; i < names.length; i++) {
+            assertEquals(namesSortedExpected[i], resultsAscending.get(i).getName());
+        }
+    }
 }
