@@ -340,6 +340,8 @@ If the `lastCommand` was an:
     ```
 
 #### Sequence Diagram
+Here is the sequence diagram for the undo of `AddCommand` 
+
 <img src="images/UndoSequenceDiagram.svg" width="900" />
 
 

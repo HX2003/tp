@@ -1,8 +1,12 @@
 @startuml
-skinparam classAttributeIconSize 0
+!include Style.puml
+
+skinparam linetype ortho
+skinparam nodesep 100
+hide empty members
 
 abstract class Command {
-  # isReversible : boolean
+  + isReversible : boolean
   + execute(ctx : CommandContext) : CommandResult
   + undo(ctx : CommandContext) : CommandResult
 }
@@ -17,7 +21,6 @@ class AddCommand {
   - condition : String
   - language : String
   - cardNumber : String
-  - addedCard : Card
   - addedIndex : int
   - wasMerged : boolean
   + execute(ctx : CommandContext) : CommandResult
@@ -32,7 +35,7 @@ class CommandContext {
 
 class CardsList {
   + addCard(card : Card)
-  + editCard(...) : boolean
+  + editCard() : boolean
   + removeCardByIndex(index : int)
 }
 
@@ -49,8 +52,9 @@ class CommandResult {
 
 Command <|-- AddCommand
 
-AddCommand "1" ..> "1" CommandContext : uses
-AddCommand "1" ..> "1" CardsList     : calls
-AddCommand "1" ..> "0..1" Card       : creates
-AddCommand "1" ..> "1" CommandResult : returns
+AddCommand ..> CommandContext : uses
+AddCommand ..> CardsList     : calls
+AddCommand --> "0..1" Card       : creates
+AddCommand ..> CommandResult : execute
+
 @enduml

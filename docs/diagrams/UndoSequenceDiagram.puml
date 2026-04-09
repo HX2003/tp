@@ -1,47 +1,76 @@
 @startuml
-actor User
-participant CardCollector
-participant UndoCommand
-participant AddCommand
-participant EditCommand
-participant RemoveCardByIndexCommand
-participant RemoveCardByNameCommand
-participant CardsList
+!include Style.puml
 
-User -> CardCollector : "undo"
+participant ":CardCollector" as CardCollector
+participant ":CommandContext" as CommandContext COMMANDCONTEXT_COLOR_PRIMARY
+participant ":Parser" as Parser PARSER_COLOR_PRIMARY
+participant ":UndoCommand" as UndoCommand COMMAND_COLOR_PRIMARY
+participant ":Command" as Command COMMAND_COLOR_PRIMARY
+participant ":Ui" as Ui UI_COLOR_PRIMARY
+
+-> CardCollector : input "undo"
+
+activate CardCollector
+CardCollector -> Parser : parse(input)
+activate Parser
+
+create UndoCommand
+Parser -> UndoCommand
+activate UndoCommand
+UndoCommand --> Parser : command
+deactivate UndoCommand
+
+Parser --> CardCollector : command
+deactivate Parser
+CardCollector -[hidden]-> Parser
+
+create CommandContext
+CardCollector -> CommandContext
+activate CommandContext
+CommandContext --> CardCollector : context
+deactivate CommandContext
+
 CardCollector -> UndoCommand : execute(context)
-UndoCommand -> UndoCommand : history = context.getCommandHistory()
+activate UndoCommand
 
-alt history is empty
-    UndoCommand -> CardCollector : ui.echo("Nothing to Undo.")
+UndoCommand -> CommandContext : getCommandHistory()
+activate CommandContext
+CommandContext --> UndoCommand : commandHistory (Stack)
+deactivate CommandContext
 
-else last command was AddCommand
-    UndoCommand -> AddCommand : undo(context)
-    alt wasMerged = true
-        AddCommand -> CardsList : editCard(addedIndex, restoredQty, ...)
-        note right : subtracts the added quantity\nfrom the existing card
-    else wasMerged = false
-        AddCommand -> CardsList : removeCardByIndex(addedIndex)
-        note right : deletes the newly added card
-    end
+alt commandHistory is empty
+    UndoCommand -> Ui : echo("Nothing to undo.")
+    activate Ui
+    Ui --> UndoCommand
+    deactivate Ui
 
-else last command was EditCommand
-    UndoCommand -> EditCommand : undo(context)
-    EditCommand -> CardsList : editCard(targetIndex, oldName, oldQty, oldPrice, ...)
-    note right : restores all old field values\nsaved during execute()
+    UndoCommand --> CardCollector : commandResult
+else commandHistory is not empty
+    UndoCommand -> CommandContext : commandHistory.pop()
+    activate CommandContext
+    CommandContext --> UndoCommand : lastCommand
+    deactivate CommandContext
 
-else last command was RemoveCardByIndexCommand
-    UndoCommand -> RemoveCardByIndexCommand : undo(context)
-    RemoveCardByIndexCommand -> CardsList : addCardAtIndex(targetIndex, removedCard)
-    note right : re-inserts saved card\nat its original position
+    UndoCommand -> Command : undo(context)
+    activate Command
 
-else last command was RemoveCardByNameCommand
-    UndoCommand -> RemoveCardByNameCommand : undo(context)
-    RemoveCardByNameCommand -> CardsList : addCardAtIndex(removedIndex, removedCard)
-    note right : re-inserts saved card\nat its original position
+    Command -> Ui : printUndoSuccess(targetList)
+    activate Ui
+    Ui --> Command
+    deactivate Ui
+
+    Command --> UndoCommand : commandResult
+    deactivate Command
 end
 
-UndoCommand -> CardCollector : ui.printUndoSuccess(list)
-UndoCommand --> CardCollector : CommandResult(exit=false)
-note right of CardCollector : storage.save()
+UndoCommand --> CardCollector : commandResult
+deactivate UndoCommand
+CardCollector -[hidden]-> Parser
+
+<-- CardCollector
+deactivate CardCollector
+
+destroy CommandContext
+destroy UndoCommand
+
 @enduml
