@@ -1,0 +1,33 @@
+@startuml
+!include Style.puml
+
+skinparam linetype polyline
+
+hide empty members
+
+class NumericFilter
+class CardHistoryType
+class CardSortCriteria
+
+package parser {
+    class Parser PARSER_COLOR_PRIMARY
+    class SplitTokenizer PARSER_COLOR_PRIMARY
+    class Disambiguator PARSER_COLOR_PRIMARY
+}
+
+class XYZCommand COMMAND_COLOR_PRIMARY
+class "{abstract}\nCommand" COMMAND_COLOR_PRIMARY
+Parser .up.> SplitTokenizer
+Parser .up.> Disambiguator
+
+note bottom of XYZCommand: XYZCommand = AddCommand,\n EditCommand, etc.
+
+Parser .left.> XYZCommand : <<create>>
+
+Parser ..> NumericFilter
+Parser ..> CardSortCriteria
+Parser ..> CardHistoryType
+
+
+"{abstract}\nCommand" <|-- XYZCommand
+@enduml

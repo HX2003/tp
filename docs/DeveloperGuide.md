@@ -3,6 +3,12 @@
 ## Table of Contents
 - [Acknowledgements](#acknowledgements)
 - [Design & Implementation](#design--implementation)
+    - [Parser](#parser)
+        - [Class Diagram](#class-diagram-for-parsing)
+    - [Parser: Exceptions](#parser-exceptions)
+        - [Class Diagram](#class-diagram-for-parser-exceptions)
+    - [Parser: SplitTokenizer](#parser-split-tokenizer)
+    - [Parser: Disambiguator](#parser-disambiguator)
     - [Add Feature](#add-feature)
         - [Architecture-level](#architecture-level)
         - [Implementation](#implementation)
@@ -70,10 +76,6 @@
         - [Architecture-level](#architecture-level-14)
         - [Implementation](#implementation-11)
         - [Design decisions](#design-decisions-12)
-    - [Parser: Exceptions](#parser-exceptions)
-        - [Class Diagram](#class-diagram-3)
-    - [Parser: SplitTokenizer](#parser-split-tokenizer)
-    - [Parser: Disambiguator](#parser-disambiguator)
 - [Appendix: Product Scope](#appendix-product-scope)
     - [Target User Profile](#target-user-profile)
     - [Value Proposition](#value-proposition)
@@ -93,6 +95,49 @@ The architecture of CardCollector consists of three main components:
 1. **`Ui`**: Handles all interactions with the user (reading input and printing formatted output).
 2. **`CardCollector`**: The main logic controller that parses user input and executes the appropriate commands.
 3. **`CardsList` & `Card`**: The data structures storing the inventory and individual card details, including timestamp history.
+
+### Parser
+`Parser` takes an input string, processes it, and creates an appropriate `XYZCommand` (XYZ is just a placeholder for the actual command)
+with associated data. When parsing invalid inputs, an exception will be thrown instead.
+
+Some but not all commands utilize `SplitTokenizer` and `Disambiguator` for argument parsing.
+The parser also depends on some other classes for enumerations and related logic.
+
+#### Class Diagram for parsing
+<img src="images/ParserClassDiagram.svg" width="600"/>
+
+
+### Parser: Split Tokenizer
+The `SplitTokenizer` processes a string by splitting it around matches of the given regular expression,
+and provides indexed access to the resulting tokens.
+
+### Parser: Disambiguator
+The `Disambiguator` takes an input string and matches it against a list of keywords strings
+to determine which one the user intended to enter.
+This is to support fuzzy arguments in certain commands to make it faster for users to type.
+
+* To illustrate, if the keywords are "share", "shard", "shout"
+* Input of "sh" matches all 3 keywords, as we cannot determine which it is, an exception is thrown.
+* Input of "sha" matches all 2 keywords, as we cannot determine which it is, an exception is thrown.
+* Input of "shar" matches "shard", thus the user probably intended to enter the string "shard".
+
+**Alternatives considered**
+
+For handling typos, a metric called the "Levenshtein distance" was considered to measure
+the similarity of the strings. However, it was not adopted due to its relative complexity.
+That said, "Levenshtein distance" remains a potential nice-to-have feature for future enhancement.
+### Parser: Exceptions
+During parsing, users may occasionally enter invalid inputs.
+To handle this reliably, 3 fine-grained exceptions  `ParseBlankCommandException`,
+`ParseUnknownCommandException`, and `ParseInvalidArgumentException` which all inherits from `ParseException` are defined.
+This ensures traceability, providing users with clear context about the issue.
+
+In particular, for `ParseInvalidArgumentException` which is only thrown when the command is known, but the arguments are invalid,
+an additional list of strings `usages` can be supplied to suggest the proper usage.
+The first string is usually the usage format, while strings onwards are example usages.
+
+#### Class Diagram for parser exceptions
+<img src="images/ParserExceptionsClassDiagram.svg" width="800"/>
 
 ### Add Feature
 
@@ -806,40 +851,6 @@ public CommandResult execute(CommandContext context) {
 - Transfers ownership cleanly: remove from wishlist + `addCard` to inventory (reuses existing add/merge logic).
 - Updates both lists atomically within one command.
 - Can be used only on the wishlist (enforced by prefix routing).
-
-
-### Parser: Exceptions
-During parsing, users may occasionally enter invalid inputs.
-To handle this reliably, 3 fine-grained exceptions  `ParseBlankCommandException`,
-`ParseUnknownCommandException`, and `ParseInvalidArgumentException` which all inherits from `ParseException` are defined.
-This ensures traceability, providing users with clear context about the issue.
-
-In particular, for `ParseInvalidArgumentException` which is only thrown when the command is known, but the arguments are invalid,
-an additional list of strings `usages` can be supplied to suggest the proper usage.
-The first string is usually the usage format, while strings onwards are example usages.
-
-#### Class Diagram
-<img src="images/ParserExceptionsClassDiagram.svg" width="800"/>
-
-### Parser: Split Tokenizer
-The `SplitTokenizer` processes a string by splitting it around matches of the given regular expression,
-and provides indexed access to the resulting tokens.
-
-### Parser: Disambiguator
-The `Disambiguator` takes an input string and matches it against a list of keywords strings
-to determine which one the user intended to enter.
-This is to support fuzzy arguments in certain commands to make it faster for users to type.
-
-* To illustrate, if the keywords are "share", "shard", "shout"
-* Input of "sh" matches all 3 keywords, as we cannot determine which it is, an exception is thrown.
-* Input of "sha" matches all 2 keywords, as we cannot determine which it is, an exception is thrown.
-* Input of "shar" matches "shard", thus the user probably intended to enter the string "shard".
-
-**Alternatives considered**
-
-For handling typos, a metric called the "Levenshtein distance" was considered to measure
-the similarity of the strings. However, it was not adopted due to its relative complexity.
-That said, "Levenshtein distance" remains a potential nice-to-have feature for future enhancement.
 
 ## Appendix: Product Scope
 ### Target User Profile
