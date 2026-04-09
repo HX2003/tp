@@ -39,7 +39,71 @@ public class CommandTest {
                 null, new UploadUndoState(), new Stack<>());
     }
 
+    /**
+     * Creates a new command context, whose target inventory is the wishlist,
+     * from an existing command context.
+     *
+     * @return command context.
+     */
+    private CommandContext createCommandContextWishlistTarget(CommandContext context) {
+        return new CommandContext(
+                context.getUi(), context.getWishlist(), context.getInventory(), context.getWishlist(),
+                context.getStorage(), context.getUploadUndoState(), context.getCommandHistory());
+    }
+
     //@@author HX2003
+    /**
+     * This tests whether history is successfully recorded,
+     * for an edge case where a quantity wishlist acquired is executed
+     * to move a duplicate card that has quantity of 0 from the wishlist to the main list.
+     * <p>
+     * INITIAL SETUP
+     *     WISHLIST:  [index = 1] MyCard | Quantity: 0 | Price: 1.0
+     *     MAIN LIST: [index = 1] MyCard | Quantity: 1 | Price: 1.0
+     * FINAL RESULT
+     *     WISHLIST:  is empty
+     *     MAIN LIST: [index = 1] MyCard | Quantity: 1 | Price: 1.0
+     * <p>
+     * The expected result for histories are:
+     *     WISHLIST: 2 history entries,
+     *               an ADD for the initial add,
+     *               a REMOVE (with quantity change of 0) for subsequent removal.
+     *     MAIN LIST: 1 history entries,
+     *               an ADD for the initial add,
+     *               nothing else since card already exists, and quantity did not change.
+     */
+    @Test
+    public void execute_wishlistAcquiredQuantity0Merge_historySuccess() {
+        CommandContext commandContext = createCommandContext();
+
+        Command addWishlistCommand = new AddCommand(null, "MyCard", 0, 1.0f,
+                null, null, null, null, null, null);
+
+        CommandContext commandContextWishlist = createCommandContextWishlistTarget(commandContext);
+        addWishlistCommand.execute(commandContextWishlist);
+
+
+        Command addCommand = new AddCommand(null, "MyCard", 1, 1.0f,
+                null, null, null, null, null, null);
+
+        addCommand.execute(commandContext);
+
+        Command wishlistAcquiredCommand = new AcquiredCommand(0);
+        wishlistAcquiredCommand.execute(commandContextWishlist);
+
+
+        CardsHistory history = commandContext.getInventory().getHistory();
+        CardsHistory wishlistHistory = commandContext.getWishlist().getHistory();
+        ArrayList<CardHistoryEntry> historyList = history.getSortedHistoryList(false);
+        ArrayList<CardHistoryEntry> wishlistHistoryList = wishlistHistory.getSortedHistoryList(false);
+
+        assertEquals(2, wishlistHistoryList.size());
+
+        assertEquals(1, historyList.size());
+        CardHistoryEntry entry1 = historyList.get(0);
+        assertEquals(CardHistoryType.ADDED, entry1.getCardHistoryType());
+    }
+
     @Test
     public void execute_addUndo_historySuccess() {
         for (int quantity = 0; quantity < 2; quantity++) {
