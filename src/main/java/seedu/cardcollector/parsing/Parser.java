@@ -363,7 +363,7 @@ public class Parser {
             );
         }
 
-        if (cardNumber != null && !cardNumber.matches("^\\d+$")) {
+        if (cardNumber != null && !cardNumber.matches("^[\\d/]+$")) {
             throw new ParseInvalidArgumentException(
                     "Card Number must contain numbers only",
                     USAGE_ADD_COMMAND
@@ -798,7 +798,7 @@ public class Parser {
             }
         }
 
-        if (cardNumber != null && !cardNumber.get().matches("^\\d+$")) {
+        if (cardNumber != null && !cardNumber.get().matches("^[\\d/]+$")) {
             throw new ParseInvalidArgumentException(
                     "Card Number must contain numbers only",
                     USAGE_ADD_COMMAND
