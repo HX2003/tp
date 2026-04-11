@@ -535,12 +535,24 @@ public class CardsList {
         assert cards.size() > 0 : "List should not be empty if it wasn't before reorder";
     }
 
+    //@@author WeiHeng2003
     public void restoreCard(int index, Card card) {
         assert index >= 0 && index < cards.size() : "Index out of bounds for restore";
         assert card != null : "Card to restore should not be null";
         Card current = cards.get(index).copy();
         cards.set(index, card.copy());
         this.history.add(current, card.copy());
+    }
+
+    //@@author WeiHeng2003
+    public ArrayList<Integer> getIndicesByName (String name) {
+        ArrayList<Integer> indices = new ArrayList<>();
+        for (int i = 0; i < cards.size(); i++) {
+            if (cards.get(i).getName().equalsIgnoreCase(name)) {
+                indices.add(i);
+            }
+        }
+        return indices;
     }
 
     public boolean isWishlist() {
