@@ -109,8 +109,8 @@ public class HelpCommand extends Command {
                 "undo"
             }),
             new HelpTopic("clear", List.of(), "clear all cards from the current list", new String[] {
-                    "clear",
-                    "wishlist clear"
+                "clear",
+                "wishlist clear"
             }),
             new HelpTopic("bye", List.of(), "exit the application", new String[] {
                 "bye"
