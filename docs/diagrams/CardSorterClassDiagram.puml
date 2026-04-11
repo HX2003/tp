@@ -9,7 +9,12 @@ class Card CARDS_COLOR_PRIMARY
 
 class CardSorter {
   + {static} getSortComparator(\n    criteria: CardSortCriteria \n): Comparator<Card>
-  + {static} sort(\n    cards: ArrayList<Card>,\n    criteria:CardSortCriteria, \n    maxLimit: int, \n    defaultMaxLimit: int,    \n    isDescending: boolean \n): ArrayList<Card>
+
+  + {static} sort(\n    cards: ArrayList<Card>,\n    criteria: CardSortCriteria, \n    maxLimit: int, \n    defaultMaxLimit: int,    \n    isDescending: boolean \n): ArrayList<Card>
+
+  - {static} getCardNumberComparator():\nComparator<String>
+
+  - {static} parseToLongArray(s: String): long[]
 }
 
 CardSorter ..> Card

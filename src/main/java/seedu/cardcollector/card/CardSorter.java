@@ -1,6 +1,8 @@
 package seedu.cardcollector.card;
 
+import java.io.Serializable;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Collections;
@@ -46,7 +48,7 @@ public class CardSorter {
         }
         case NUMBER -> {
             return Comparator.comparing(Card::getCardNumber,
-                    Comparator.nullsFirst(String.CASE_INSENSITIVE_ORDER));
+                    Comparator.nullsFirst(getCardNumberComparator()));
         }
         case NOTE -> {
             return Comparator.comparing(Card::getNote,
@@ -121,5 +123,57 @@ public class CardSorter {
         return cardsStream
                 .limit(recordsLimit)
                 .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * Returns a comparator that compares card number strings by their numeric segments.
+     * Empty or blank strings are treated as [0]. Each / delimited segment
+     * is compared numerically; missing segments default to 0.
+     *
+     * @return A comparator for card number strings.
+     */
+    private static Comparator<String> getCardNumberComparator() {
+        return (Comparator<String> & Serializable) (s1, s2) -> {
+            long[] nums1 = parseToLongArray(s1);
+            long[] nums2 = parseToLongArray(s2);
+
+            int maxLength = Math.max(nums1.length, nums2.length);
+
+            for (int i = 0; i < maxLength; i++) {
+                long num1 = (i < nums1.length) ? nums1[i] : 0;
+                long num2 = (i < nums2.length) ? nums2[i] : 0;
+
+                if (num1 != num2) {
+                    return Long.compare(num1, num2);
+                }
+            }
+
+            // Tie-breaker
+            return Integer.compare(nums1.length, nums2.length);
+        };
+    }
+
+    /**
+     * Parses a card number string into an array of numeric long segments.
+     * Empty or blank input yields [0]. Consecutive slashes produce zero segments.
+     *
+     * @param s The card number string to parse.
+     * @return An array of longs representing each numeric segment.
+     */
+    private static long[] parseToLongArray(String s) {
+        if (s == null || s.isBlank()) {
+            return new long[]{0};
+        }
+
+        // Split keeping empty parts, as these will be assumed to mean 0
+        String[] parts = s.split("/", -1);
+
+        try {
+            return Arrays.stream(parts)
+                    .mapToLong(part -> part.isEmpty() ? 0 : Long.parseLong(part))
+                    .toArray();
+        } catch (NumberFormatException e) {
+            return new long[]{0};
+        }
     }
 }

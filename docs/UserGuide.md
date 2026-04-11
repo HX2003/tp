@@ -86,13 +86,16 @@ Displays cards in the current list in a sorted order.
 - Arguments are optional, but if specified, must be in sequential order without skipping any.
 - Argument matching is intentionally fuzzy for fast usage.
 - **Sorting guide**:
-  - Except for `index`, `quantity` and `price`, **all** other properties are treated as strings and thus are sorted in case-insensitive lexicographical order.
+  - Except for `index`, `quantity`, `price`, `number`, **all** other properties are treated as strings and thus are sorted in case-insensitive lexicographical order.
     - This includes `rarity` and `condition`, as they do not have any predefined order.
-    - This includes card `number` (not to be confused with `index` or `quantity`). Despite its name, `number` is a string identifier (e.g. "LOT-01"), not a numeric type.
-    - Some properties may be uninitialized or have null values, in such scenarios,
+  - For property `number` (not to be confused with `index` or `quantity`),
+    sorting is performed by comparing numeric segments delimited by /, with the earlier segments having priority.
+    Each segment is treated as a number, and missing segments default to 0.
+    For example, `1/2` (which can be interpreted as batch 1, card 2), comes before `1/10` (batch 1, card 10).
+  - For properties `added`, `modified` and `removed` refer to [history](#viewing-history-history) for detailed explanation on what they mean.
+  - Some properties may be uninitialized or have null values, in such scenarios,
     null values appear first when the sorting direction is `ascending`,
     while null values appear last when the sorting direction is `descending`.
-  - For properties `added`, `modified` and `removed` refer to [history](#viewing-history-history) for detailed explanation on what they mean.
 
 
 ### Reordering the list: `reorder`
