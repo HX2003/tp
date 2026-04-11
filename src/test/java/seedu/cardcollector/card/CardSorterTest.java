@@ -153,4 +153,32 @@ public class CardSorterTest {
             assertEquals(namesSortedExpected[i], resultsAscending.get(i).getName());
         }
     }
+
+    @Test
+    public void sort_byCardNumber_success() {
+        ArrayList<Card> cards = new ArrayList<>();
+
+        Card.Builder commonBuilder = new Card.Builder()
+                .price(1.00f)
+                .quantity(1);
+
+        String[] cardNumbers = {
+            "1/6/98", "999", "1", "0", "22432", "1/6/7", "1/6", "1/2", "2/1", "1//", "1/"
+        };
+        String[] cardNumbersSortedExpected = {
+            "0", "1", "1/", "1//", "1/2", "1/6", "1/6/7", "1/6/98", "2/1", "999", "22432"
+        };
+
+        for (String cardNumber: cardNumbers) {
+            Card card = commonBuilder.name(cardNumber).cardNumber(cardNumber).build();
+            cards.add(card);
+        }
+
+        ArrayList<Card> resultsAscending = CardSorter.sort(
+                cards, CardSortCriteria.NUMBER, -1, Integer.MAX_VALUE, false);
+
+        for (int i = 0; i < cardNumbers.length; i++) {
+            assertEquals(cardNumbersSortedExpected[i], resultsAscending.get(i).getCardNumber());
+        }
+    }
 }

@@ -809,14 +809,14 @@ public class Parser {
 
         if (cardNumber != null && !cardNumber.get().matches("^[\\d/]+$")) {
             throw new ParseInvalidArgumentException(
-                    "Card Number must contain numbers only",
+                    "Card Number must contain numbers or forward slashes / only",
                     USAGE_ADD_COMMAND
             );
         }
 
         if (language != null && !language.get().matches("[a-zA-Z\\s]+")) {
             throw new ParseInvalidArgumentException(
-                    "Language must contain letters only",
+                    "Language must contain letters or forward slashes / only",
                     USAGE_EDIT_COMMAND
             );
         }
