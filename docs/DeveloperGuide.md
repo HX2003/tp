@@ -658,10 +658,6 @@ thus serving as an audit log of the cards in each inventory (separate for wishli
   The `ENTIRE` value is a special enum constant used **only for filtering operations**. It is never assigned to individual history entries;
   instead, it is only used to instruct the system to display entries from all 3 categories when listing history.
 
-- Note that a single `CardHistoryEntry` is unable to fully record
-  when both quantity and other fields changes. It is possible for a single edit operation to produce 2 history entries, if both quantity and other fields were changed.
-  The 2 histories entry will be either a `ADD` or `REMOVED` entry, an another `MODIFIED` entry to indicate that other fields were changed.
-  Note that multiple changes to 2 or more other fields are recorded as a single `MODIFIED` entry.
 - There are 2 separate histories, one for the main list and other for the wishlist.
 - `undo` command does not revert the history, but rather adds to the history,
   the exception is the `clear` command which clears the history
@@ -680,8 +676,11 @@ Whenever an `add`, `edit`, `remove*`, `tag` or any other command that changes th
 3. `CardFieldChange` is only computed when needed i.e. for `history` command since it needs to print what changed.
 
 Note: a conflict arises when `edit` command both changes the quantity and other fields like the name,
-in such a case the `add` method of `CardsHistory` will be called twice,
-one for change in quantity, and the other for the change in the other fields.
+in such a case the `add` method of `CardsHistory` will be called twice, thus 2 entries will be recorded,
+one `ADD` for change in quantity, and the other `MODIFIED` for the change in the other fields.
+This is because a single `CardHistoryEntry` is unable to fully record when both quantity and other fields changes.
+
+Note that multiple changes to 2 or more other fields, excluding quantity are recorded as a single `MODIFIED` entry.
 
 #### Implementation
 #### Class Diagram
