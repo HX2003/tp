@@ -13,7 +13,7 @@ public class RemoveCardByIndexCommand extends Command {
     @Override
     public CommandResult execute(CommandContext context) {
         var ui = context.getUi();
-        var inventory = context.getTargetList();
+        var inventory = getAffectedList(context);
         if (targetIndex < 0 || targetIndex >= inventory.getSize()) {
             ui.printInvalidIndex();
             this.isReversible = false;
@@ -29,7 +29,8 @@ public class RemoveCardByIndexCommand extends Command {
     @Override
     public CommandResult undo(CommandContext context) {
         if (removedCard != null) {
-            context.getTargetList().addCardAtIndex(targetIndex, removedCard);
+            var targetList = getAffectedList(context);
+            targetList.addCardAtIndex(targetIndex, removedCard);
             context.getUi().printUndoSuccess(context.getTargetList());
         }
         return new CommandResult(false);

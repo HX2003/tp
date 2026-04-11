@@ -37,7 +37,7 @@ public class AddCommand extends Command {
 
     @Override
     public CommandResult execute(CommandContext context) {
-        var inventory = context.getTargetList();
+        var inventory = getAffectedList(context);
 
         for (int i = 0; i < inventory.getSize(); i++) {
             Card existing = inventory.getCard(i);
@@ -82,7 +82,7 @@ public class AddCommand extends Command {
 
     @Override
     public CommandResult undo(CommandContext context) {
-        var inventory = context.getTargetList();
+        var inventory = getAffectedList(context);
 
         if (wasMerged) {
             Card existing = inventory.getCard(addedIndex);

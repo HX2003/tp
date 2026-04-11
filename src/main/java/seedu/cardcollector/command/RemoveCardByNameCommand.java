@@ -14,7 +14,7 @@ public class RemoveCardByNameCommand extends Command {
     @Override
     public CommandResult execute(CommandContext context) {
         var ui = context.getUi();
-        var inventory = context.getTargetList();
+        var inventory = getAffectedList(context);
 
         for (int i = 0; i < inventory.getSize(); i++) {
             if (inventory.getCard(i).getName().equalsIgnoreCase(targetName)) {
@@ -39,7 +39,8 @@ public class RemoveCardByNameCommand extends Command {
     @Override
     public CommandResult undo(CommandContext context) {
         if (removedCard != null) {
-            context.getTargetList().addCardAtIndex(removedIndex, removedCard);
+            var targetList = getAffectedList(context);
+            targetList.addCardAtIndex(removedIndex, removedCard);
             context.getUi().printUndoSuccess(context.getTargetList());
         }
         return new CommandResult(false);

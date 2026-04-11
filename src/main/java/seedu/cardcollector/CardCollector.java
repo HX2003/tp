@@ -73,6 +73,10 @@ public class CardCollector {
                 CommandContext context = new CommandContext(
                         ui, targetList, inventory, wishlist, storage, uploadUndoState, commandHistory);
 
+                if (isWishlistCommand) {
+                    command.markAsWishlistOperation();
+                }
+
                 CommandResult result = command.execute(context);
 
                 if (command.isReversible()) {

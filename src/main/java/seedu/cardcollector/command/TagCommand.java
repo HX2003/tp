@@ -22,7 +22,7 @@ public class TagCommand extends Command {
     @Override
     public CommandResult execute(CommandContext context) {
         var ui = context.getUi();
-        var cards = context.getTargetList();
+        var cards = getAffectedList(context);
         if (targetIndex < 0 || targetIndex >= cards.getSize()) {
             ui.printInvalidIndex();
             return new CommandResult(false, false);
@@ -46,12 +46,13 @@ public class TagCommand extends Command {
 
     @Override
     public CommandResult undo(CommandContext context) {
+        var targetList = getAffectedList(context);
         boolean success = switch (operation) {
-        case ADD -> context.getTargetList().removeTag(targetIndex, tag);
-        case REMOVE -> context.getTargetList().addTag(targetIndex, tag);
+        case ADD -> targetList.removeTag(targetIndex, tag);
+        case REMOVE -> targetList.addTag(targetIndex, tag);
         };
         if (success) {
-            context.getUi().printUndoSuccess(context.getTargetList());
+            context.getUi().printUndoSuccess(targetList);
         }
         return new CommandResult(false,false);
     }

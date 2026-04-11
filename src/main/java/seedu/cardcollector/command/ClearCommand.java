@@ -11,7 +11,7 @@ public class ClearCommand extends Command {
 
     @Override
     public CommandResult execute(CommandContext context) {
-        var targetList = context.getTargetList();
+        var targetList = getAffectedList(context);
         this.previousState = targetList.deepCopy();
 
         targetList.clear();
@@ -22,7 +22,7 @@ public class ClearCommand extends Command {
 
     @Override
     public CommandResult undo(CommandContext context) {
-        var targetList = context.getTargetList();
+        var targetList = getAffectedList(context);
         targetList.replaceWith(previousState);
 
         context.getUi().printUndoSuccess(targetList);

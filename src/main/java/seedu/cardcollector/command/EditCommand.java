@@ -38,7 +38,7 @@ public class EditCommand extends Command {
     @Override
     public CommandResult execute(CommandContext context) {
         var ui = context.getUi();
-        var inventory = context.getTargetList();
+        var inventory = getAffectedList(context);
         if (targetIndex < 0 || targetIndex >= inventory.getSize()) {
             ui.printInvalidIndex();
             this.isReversible = false;
@@ -62,7 +62,8 @@ public class EditCommand extends Command {
     @Override
     public CommandResult undo(CommandContext context) {
         originalCard.setLastModified(Instant.now());
-        context.getTargetList().restoreCard(targetIndex, originalCard);
+        var targetList = getAffectedList(context);
+        targetList.restoreCard(targetIndex, originalCard);
         context.getUi().printUndoSuccess(context.getTargetList());
         return new CommandResult(false);
     }
