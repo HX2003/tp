@@ -9,6 +9,8 @@
         - [Class Diagram](#class-diagram-for-parser-exceptions)
     - [Parser: SplitTokenizer](#parser-split-tokenizer)
     - [Parser: Disambiguator](#parser-disambiguator)
+    - [Utilities](#utilities)
+    - [Utilities: Box](#utilities-box)
     - [Add Feature](#add-feature)
         - [Architecture-level](#architecture-level)
         - [Implementation](#implementation)
@@ -91,17 +93,20 @@
 
 ## Design & implementation
 
-The architecture of CardCollector consists of three main components:
+The architecture of CardCollector consists of 6 main components:
 1. **`Ui`**: Handles all interactions with the user (reading input and printing formatted output).
 2. **`CardCollector`**: The main logic controller that parses user input and executes the appropriate commands.
-3. **`CardsList` & `Card`**: The data structures storing the inventory and individual card details, including timestamp history.
+3. **`CardsList`, `Card` & `CardsHistory`**: The data structures storing the inventory and individual card details, including timestamp history.
+4. **`Command`**: Represents executable actions with custom parameters.
+5. **`Parser`**: Interprets raw user input, validates syntax, and transforms it into a concrete command object with extracted arguments.
+6. **`Storage`**: Handles persistence.
 
 ### Parser
 `Parser` takes an input string, processes it, and creates an appropriate `XYZCommand` (XYZ is just a placeholder for the actual command)
 with associated data. When parsing invalid inputs, an exception will be thrown instead.
 
 Some but not all commands utilize `SplitTokenizer` and `Disambiguator` for argument parsing.
-The parser also depends on some other classes for enumerations and related logic.
+The parser also depends on some other classes for enumerations, utility, and related logic.
 
 #### Class Diagram for parsing
 <img src="images/ParserClassDiagram.svg" width="600"/>
@@ -138,6 +143,15 @@ The first string is usually the usage format, while strings onwards are example 
 
 #### Class Diagram for parser exceptions
 <img src="images/ParserExceptionsClassDiagram.svg" width="800"/>
+
+### Utilities
+Utilities are small helper classes in the `util` subpackage.
+They provide reusable, convenient functionality that is used in the whole project.
+
+### Utilities: Box
+`Box` is just a container that holds any value or `null`. A new instance can be created via `Box.of(value)`, and its contents can be retrieved via the `.get()` method.
+Here's an example on how it can be used, a method can accept a `Box<T>` type, if `Box.of(null)` was provided, it means "explicitly set this field to null", whereas
+if `null` was provided, it means "do not change this field".
 
 ### Add Feature
 
@@ -643,11 +657,7 @@ thus serving as an audit log of the cards in each inventory (separate for wishli
 
   The `ENTIRE` value is a special enum constant used **only for filtering operations**. It is never assigned to individual history entries;
   instead, it is only used to instruct the system to display entries from all 3 categories when listing history.
-  
-- It is possible for `ADDED` or `REMOVED` entry to have a quantity change of 0, since it is possible to add a card with a quantity of 0.
-- It is possible for a single edit operation to produce 2 history entries, if both quantity and other fields were changed.
-  The 2 histories entry will be either a `ADD` or `REMOVED` entry, an another `MODIFIED` entry to indicate that other fields were changed.
-  Note that multiple changes to 2 or more other fields are recorded as a single `MODIFIED` entry.
+
 - There are 2 separate histories, one for the main list and other for the wishlist.
 - `undo` command does not revert the history, but rather adds to the history,
   the exception is the `clear` command which clears the history
@@ -666,8 +676,11 @@ Whenever an `add`, `edit`, `remove*`, `tag` or any other command that changes th
 3. `CardFieldChange` is only computed when needed i.e. for `history` command since it needs to print what changed.
 
 Note: a conflict arises when `edit` command both changes the quantity and other fields like the name,
-in such a case the `add` method of `CardsHistory` will be called twice,
-one for change in quantity, and the other for the change in the other fields.
+in such a case the `add` method of `CardsHistory` will be called twice, thus 2 entries will be recorded,
+one `ADD` for change in quantity, and the other `MODIFIED` for the change in the other fields.
+This is because a single `CardHistoryEntry` is unable to fully record when both quantity and other fields changes.
+
+Note that multiple changes to 2 or more other fields, excluding quantity are recorded as a single `MODIFIED` entry.
 
 #### Implementation
 #### Class Diagram
