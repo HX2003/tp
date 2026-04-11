@@ -712,7 +712,7 @@ public class CardsListTest {
 
         boolean changed = cardsList.editCard(0, null, null,
                 null, null, null, null,
-                null, null, Box.of(""));
+                null, null, Box.of(null));
 
         assertTrue(changed);
         assertEquals(null, cardsList.getCard(0).getNote());

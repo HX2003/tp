@@ -376,7 +376,7 @@ public class CardsList {
         boolean anyFieldChanged = false;
 
         if (isUpdatedValue(card.getName(), newName)) {
-            card.setName(trimToNull(newName.get()));
+            card.setName(trimOrNull(newName.get()));
             anyFieldChanged = true;
         }
         if (isUpdatedValue(card.getPrice(), newPrice)) {
@@ -384,28 +384,28 @@ public class CardsList {
             anyFieldChanged = true;
         }
         if (isUpdatedValue(card.getCardSet(), newCardSet)) {
-            card.setCardSet(trimToNull(newCardSet.get()));
+            card.setCardSet(trimOrNull(newCardSet.get()));
             anyFieldChanged = true;
         }
         if (isUpdatedValue(card.getRarity(), newRarity)) {
-            card.setRarity(trimToNull(newRarity.get()));
+            card.setRarity(trimOrNull(newRarity.get()));
             anyFieldChanged = true;
         }
         if (isUpdatedValue(card.getCondition(), newCondition)) {
-            card.setCondition(trimToNull(newCondition.get()));
+            card.setCondition(trimOrNull(newCondition.get()));
             anyFieldChanged = true;
         }
         if (isUpdatedValue(card.getLanguage(), newLanguage)) {
-            card.setLanguage(trimToNull(newLanguage.get()));
+            card.setLanguage(trimOrNull(newLanguage.get()));
             anyFieldChanged = true;
         }
         if (isUpdatedValue(card.getCardNumber(), newCardNumber)) {
-            card.setCardNumber(trimToNull(newCardNumber.get()));
+            card.setCardNumber(trimOrNull(newCardNumber.get()));
             anyFieldChanged = true;
         }
 
         if (isUpdatedValue(card.getNote(), newNote)) {
-            card.setNote(trimToNull(newNote.get()));
+            card.setNote(trimOrNull(newNote.get()));
             anyFieldChanged = true;
         }
 
@@ -489,7 +489,10 @@ public class CardsList {
         }
 
         if (previous instanceof String && current.get() instanceof String) {
-            return !normalized((String) previous).equals(normalized((String) current.get()));
+            String previousTrimmed = ((String) previous).trim();
+            String currentTrimmed = ((String) current.get()).trim();
+
+            return !previousTrimmed.equals(currentTrimmed);
         }
 
         return !previous.equals(current.get());
@@ -499,12 +502,11 @@ public class CardsList {
         return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
     }
 
-    private static String trimToNull(String value) {
+    private static String trimOrNull(String value) {
         if (value == null) {
             return null;
         }
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
+        return value.trim();
     }
 
     private static String normalizeSetName(String setName) {

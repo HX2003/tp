@@ -221,6 +221,12 @@ public class CommandTest {
         editCommandChangeName.execute(commandContext);
         commandContext.getCommandHistory().push(editCommandChangeName);
 
+        Command editCommandChangeSet = new EditCommand(0, null, null,
+                null, Box.of("newCard set"), null, null, null, null, null);
+        editCommandChangeSet.execute(commandContext);
+        commandContext.getCommandHistory().push(editCommandChangeSet);
+
+        new UndoCommand().execute(commandContext);
         new UndoCommand().execute(commandContext);
         new UndoCommand().execute(commandContext);
         new UndoCommand().execute(commandContext);
@@ -229,7 +235,12 @@ public class CommandTest {
         CardsHistory history = commandContext.getInventory().getHistory();
         ArrayList<CardHistoryEntry> historyList = history.getSortedHistoryList(false);
 
-        assertEquals(8, historyList.size());
+        assertEquals(10, historyList.size());
+        System.out.println(historyList.get(9).getChangedQuantity());
+        assertEquals(CardHistoryType.ADDED, historyList.get(0).getCardHistoryType());
+        assertEquals(CardHistoryType.MODIFIED, historyList.get(4).getCardHistoryType());
+        assertEquals(CardHistoryType.MODIFIED, historyList.get(5).getCardHistoryType());
+        assertEquals(CardHistoryType.REMOVED, historyList.get(9).getCardHistoryType());
     }
 
     //@@author WeiHeng2003
