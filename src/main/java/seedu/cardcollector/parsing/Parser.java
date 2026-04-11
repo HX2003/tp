@@ -363,9 +363,9 @@ public class Parser {
             );
         }
 
-        if (quantity < 0) {
+        if (quantity <= 0) {
             throw new ParseInvalidArgumentException(
-                    "Quantity cannot be negative",
+                    "Quantity cannot be negative or equal to 0",
                     USAGE_ADD_COMMAND
             );
         }
@@ -784,9 +784,9 @@ public class Parser {
             }
         }
 
-        if (quantity != null && quantity.get() < 0) {
+        if (quantity != null && quantity.get() <= 0) {
             throw new ParseInvalidArgumentException(
-                    "Quantity cannot be negative",
+                    "Quantity cannot be negative or equal 0",
                     USAGE_EDIT_COMMAND
             );
         }
