@@ -43,8 +43,8 @@ public class CardsHistory {
     /**
      * Creates a history entry from a previous and current card and adds it to the history.
      *
-     * @param previous The card before the change.
-     * @param current The card after the change.
+     * @param previous The card before the change, or null if the card was newly added.
+     * @param current The card after the change, or null if the card was removed.
      */
     public void add(Card previous, Card current) {
         CardHistoryEntry entry = new CardHistoryEntry(previous, current);

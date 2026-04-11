@@ -9,6 +9,8 @@
         - [Class Diagram](#class-diagram-for-parser-exceptions)
     - [Parser: SplitTokenizer](#parser-split-tokenizer)
     - [Parser: Disambiguator](#parser-disambiguator)
+    - [Utilities](#utilities)
+    - [Utilities: Box](#utilities-box)
     - [Add Feature](#add-feature)
         - [Architecture-level](#architecture-level)
         - [Implementation](#implementation)
@@ -91,17 +93,20 @@
 
 ## Design & implementation
 
-The architecture of CardCollector consists of three main components:
+The architecture of CardCollector consists of 6 main components:
 1. **`Ui`**: Handles all interactions with the user (reading input and printing formatted output).
 2. **`CardCollector`**: The main logic controller that parses user input and executes the appropriate commands.
-3. **`CardsList` & `Card`**: The data structures storing the inventory and individual card details, including timestamp history.
+3. **`CardsList`, `Card` & `CardsHistory`**: The data structures storing the inventory and individual card details, including timestamp history.
+4. **`Command`**: Represents executable actions with custom parameters.
+5. **`Parser`**: Interprets raw user input, validates syntax, and transforms it into a concrete command object with extracted arguments.
+6. **`Storage`**: Handles persistence.
 
 ### Parser
 `Parser` takes an input string, processes it, and creates an appropriate `XYZCommand` (XYZ is just a placeholder for the actual command)
 with associated data. When parsing invalid inputs, an exception will be thrown instead.
 
 Some but not all commands utilize `SplitTokenizer` and `Disambiguator` for argument parsing.
-The parser also depends on some other classes for enumerations and related logic.
+The parser also depends on some other classes for enumerations, utility, and related logic.
 
 #### Class Diagram for parsing
 <img src="images/ParserClassDiagram.svg" width="600"/>
@@ -138,6 +143,15 @@ The first string is usually the usage format, while strings onwards are example 
 
 #### Class Diagram for parser exceptions
 <img src="images/ParserExceptionsClassDiagram.svg" width="800"/>
+
+### Utilities
+Utilities are small helper classes in the `util` subpackage.
+They provide reusable, convenient functionality that is used in the whole project.
+
+### Utilities: Box
+`Box` is just a container that holds any value or `null`. A new instance can be created via `Box.of(value)`, and its contents can be retrieved via the `.get()` method.
+Here's an example on how it can be used, a method can accept a `Box<T>` type, if `Box.of(null)` was provided, it means "explicitly set this field to null", whereas
+if `null` was provided, it means "do not change this field".
 
 ### Add Feature
 

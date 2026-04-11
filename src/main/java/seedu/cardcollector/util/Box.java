@@ -1,7 +1,7 @@
 package seedu.cardcollector.util;
 
 /**
- * A container that holds a value or null.
+ * A container that holds any value or null.
  * Instances are created via the {@link #of(T value)} factory method.
  */
 public class Box<T> {
