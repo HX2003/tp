@@ -46,8 +46,8 @@ public class HelpCommand extends Command {
                     new String[] {
                         "list [NUMBER | all] [CRITERIA] [ascending | descending]" +
                                 System.lineSeparator() +
-                                "where CRITERIA = index | name | quantity | price | set | rarity | condition | language" +
-                                " | number | note | added | modified | removed",
+                                "where CRITERIA = index | name | quantity | price | set | rarity" +
+                                "| condition | language | number | note | added | modified | removed",
                         "list",
                         "list 50 quantity ascending",
                         "wishlist list all"
