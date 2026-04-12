@@ -114,7 +114,8 @@ public class Parser {
                 "where CRITERIA = index | name | quantity | price | set | rarity | condition | language" +
                 " | number | note | added | modified | removed",
         "list",
-        "list 50 quantity ascending"
+        "list 50 quantity ascending",
+        "wishlist list all"
     };
 
     private static final String[] USAGE_HISTORY_COMMAND = {
@@ -499,6 +500,16 @@ public class Parser {
     }
 
     //@@author HX2003
+    /**
+     * Parses the "list" command arguments, creates the list command, and returns it.
+     * Arguments are optional, but if specified, must be in sequential order without skipping any.
+     * Argument matching is intentionally fuzzy for fast usage, see Disambiguator class for more info.
+     *
+     * @param arguments The command argument that determines how many cards to display,
+     *                  the sorting criteria, and in which direction sorting should be done.
+     * @return The created list command.
+     * @throws ParseInvalidArgumentException If invalid arguments are supplied.
+     */
     private Command handleList(String arguments) throws ParseInvalidArgumentException {
         SplitTokenizer tokenizer = new SplitTokenizer(REGEX_WHITESPACES);
         tokenizer.tokenize(arguments);
@@ -717,12 +728,14 @@ public class Parser {
     }
 
     /**
-     * Handles the "history" command by displaying different types of inventory change history.
-     * The argument format is [NUMBER | all] [added | modified | removed | entire] [ascending | descending]
-     * All arguments are optional, but if provided, they must be in order.
+     * Parses the "history" command arguments, creates the history command, and returns it.
+     * Arguments are optional, but if specified, must be in sequential order without skipping any.
      * Argument matching is intentionally fuzzy for fast usage, see Disambiguator class for more info.
      *
-     * @param arguments The command argument that determines which history type to display.
+     * @param arguments The command argument that determines how many history entries to display,
+     *                  what history type, and in which direction (latest/oldest) sorting should be done.
+     * @return The created history command.
+     * @throws ParseInvalidArgumentException If invalid arguments are supplied.
      */
     private Command handleHistory(String arguments) throws ParseInvalidArgumentException {
         SplitTokenizer tokenizer = new SplitTokenizer(REGEX_WHITESPACES);

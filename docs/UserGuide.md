@@ -71,7 +71,7 @@ Compares two cards from the same list.
 
 ### Listing cards: `list`
 
-Displays cards in the current list in a sorted order.
+Displays cards in the specified inventory in a sorted order.
 
 **Format:** `list [NUMBER | all] [CRITERIA] [ascending | descending]`
 
@@ -81,6 +81,7 @@ Displays cards in the current list in a sorted order.
 `list`
 `list all`
 `list 50 quantity ascending`
+`wishlist list all`
 
 - By default, up to 15 cards is displayed, sorted by index in ascending order. You can change the number of cards to be displayed.
 - Arguments are optional, but if specified, must be in sequential order without skipping any.
