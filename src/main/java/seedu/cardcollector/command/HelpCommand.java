@@ -41,15 +41,17 @@ public class HelpCommand extends Command {
                 "reorder price",
                 "wishlist reorder name descending"
             }),
-            new HelpTopic("list", List.of(), "displays cards in the specified inventory in a sorted order", new String[] {
-                "list [NUMBER | all] [CRITERIA] [ascending | descending]" +
-                        System.lineSeparator() +
-                        "where CRITERIA = index | name | quantity | price | set | rarity | condition | language" +
-                        " | number | note | added | modified | removed",
-                "list",
-                "list 50 quantity ascending",
-                "wishlist list all"
-            }),
+            new HelpTopic("list", List.of(),
+                    "displays cards in the specified inventory in a sorted order",
+                    new String[] {
+                        "list [NUMBER | all] [CRITERIA] [ascending | descending]" +
+                                System.lineSeparator() +
+                                "where CRITERIA = index | name | quantity | price | set | rarity | condition | language" +
+                                " | number | note | added | modified | removed",
+                        "list",
+                        "list 50 quantity ascending",
+                        "wishlist list all"
+                    }),
             new HelpTopic("filter", List.of(), "filter cards by tag", new String[] {
                 "filter [/t TAG]",
                 "wishlist filter /t sealed"
