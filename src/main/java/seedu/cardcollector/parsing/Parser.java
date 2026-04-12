@@ -897,6 +897,8 @@ public class Parser {
             return new TagCommand(operation, index, tag);
         } catch (NumberFormatException e) {
             throw new ParseInvalidArgumentException("Index must be a valid integer", USAGE_TAG_COMMAND);
+        } catch (IllegalArgumentException e) {
+            throw new ParseInvalidArgumentException("Tag cannot be blank", USAGE_TAG_COMMAND);
         }
     }
 
