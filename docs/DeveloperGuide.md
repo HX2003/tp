@@ -484,7 +484,17 @@ When the user types `list 50 quantity descending`:
    and then uses this comparator for sorting and then limits the number of records to the appropriate length.
 7. `Ui` shows the sorted list.
 
-#### Implementation
+#### Implementation 
+- Except for `index`, `quantity`, `price`, `number`, **all** other properties are treated as strings and thus are sorted in case-insensitive lexicographical order.
+    - This includes `rarity` and `condition`, as they do not have any predefined order.
+- For property `number` (not to be confused with `index` or `quantity`),
+  sorting is performed by comparing numeric segments delimited by /, with the earlier segments having priority.
+  Each segment is treated as a number, and missing segments default to 0.
+  For example, `1/2` (which can be interpreted as batch 1, card 2), comes before `1/10` (batch 1, card 10).
+- For properties `added`, `modified` and `removed` refer to [history](#history-feature) for detailed explanation on what they mean.
+- Some properties may be uninitialized or have null values, in such scenarios,
+  null values appear first when the sorting direction is `ascending`,
+  while null values appear last when the sorting direction is `descending`.
 
 #### Card sorting classes
 
@@ -672,7 +682,8 @@ Whenever an `add`, `edit`, `remove*`, `tag` or any other command that changes th
 1. A copy of the previous version of the card before any changes is created (if any, `null` otherwise), and
     a copy of the current version of the card after the changes is created (if any, `null` otherwise).
 2. These 2 cards are passed to the `add` method of `CardsHistory`, which creates a `CardHistoryEntry`.
-    The `CardHistoryType` of the entry will be determined based on the content differences between the 2 cards.
+   The `CardHistoryType` of the entry will be determined based on the content differences between the 2 cards.
+   The entry is appended to the end of the history, thus already sorted by construction.
 3. `CardFieldChange` is only computed when needed i.e. for `history` command since it needs to print what changed.
 
 Note: a conflict arises when `edit` command both changes the quantity and other fields like the name,
@@ -691,14 +702,18 @@ Note that multiple changes to 2 or more other fields, excluding quantity are rec
 
 #### History Command
 The `history` command displays the contents of the `CardsHistory` which was previously populated by other commands.
-While this command itself does not mutate any existing data, it uses `CardFieldChange` on the fly to identify and print exactly what changed in each historical entry.
+This command itself does not mutate any existing data.
 
 #### Design decisions
 - Parsing uses [SplitTokenizer](#parser-split-tokenizer) to split up input arguments by whitespace(s) delimiter.
 - Once split, fuzzy argument matching through the [Disambiguator](#parser-disambiguator) allows faster typing for experienced CLI users.
 
-To model the interactions that occur when the user issues the command `history all added`, below is a simplified *Sequence Diagram* to illustrate it.
-Some details related to `UI` input handling, `Parsing` and `CardsHistory` have been omitted for brevity.
+Since card history is already sorted chronologically by construction, displaying history in ascending order simply iterates
+the list as is, while a single `Collections.reverse(...)` on its shallow copy is all that's needed displaying in the opposite direction. For each history entry, the Ui prints
+what type of history entry it is, its timestamp, the corresponding card details, and also computes exactly what changed in each historical entry on the fly.
+
+To model the overall interactions that occur when the user issues the command `history all added`, below is a simplified *Sequence Diagram* to illustrate it.
+Some details related to parsing, Ui input handling and printing, have been omitted for brevity.
 
 
 #### Sequence Diagram for History Command

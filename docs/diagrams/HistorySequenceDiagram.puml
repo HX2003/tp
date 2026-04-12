@@ -1,11 +1,12 @@
 @startuml
 !include Style.puml
 
-
 participant ":CardCollector" as CardCollector
-participant ":CommandContext" as CommandContext COMMANDCONTEXT_COLOR_PRIMARY
 participant ":Parser" as Parser PARSER_COLOR_PRIMARY
+
 participant ":HistoryCommand" as HistoryCommand COMMAND_COLOR_PRIMARY
+participant ":CommandContext" as CommandContext COMMANDCONTEXT_COLOR_PRIMARY
+participant ":CardsList" as CardsList CARDS_COLOR_PRIMARY
 participant ":Ui" as Ui UI_COLOR_PRIMARY
 
 -> CardCollector : input "history all added"
@@ -34,8 +35,28 @@ deactivate
 CardCollector -> HistoryCommand : execute(context)
 activate HistoryCommand
 
+'Get Ui'
+HistoryCommand -> CommandContext : getUi()
+activate CommandContext
+CommandContext --> HistoryCommand : ui
+deactivate CommandContext
+
+'Get target list'
+HistoryCommand -> CommandContext : getTargetList()
+activate CommandContext
+CommandContext --> HistoryCommand : inventory
+deactivate CommandContext
+
+'Get history for CardsList'
+HistoryCommand -> CardsList : getHistory()
+activate CardsList
+CardsList --> HistoryCommand : history
+deactivate CardsList
+
+
 HistoryCommand -> Ui: printHistory(...)
 activate Ui
+
 Ui --> HistoryCommand
 deactivate Ui
 

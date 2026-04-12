@@ -83,7 +83,8 @@ Displays cards in the specified inventory in a sorted order.
 `list 50 quantity ascending`
 `wishlist list all`
 
-- By default, up to 15 cards is displayed, sorted by index in ascending order. You can change the number of cards to be displayed.
+- By default, up to 15 cards are displayed, sorted by index in ascending order.
+  You can change how many cards to display, the sorting criteria, and in which direction sorting should be done.
 - Arguments are optional, but if specified, must be in sequential order without skipping any.
 - Argument matching is intentionally fuzzy for fast usage.
 - **Sorting guide**:
@@ -245,7 +246,8 @@ thus serving as an audit log of the cards in each inventory (separate for wishli
   A single `edit` command may produce multiple entries.
 
 **Format:** `history [NUMBER | all] [added | modified | removed | entire] [ascending | descending]`
-
+- By default, up to 15 history entries are displayed, sorted by latest first (descending order).
+You can change how many history entries to display, what history type, and in which direction sorting should be done.
 - Arguments are optional, but if specified, must be in sequential order without skipping any.
 - Argument matching is intentionally fuzzy for fast usage.
 - There are 3 types of history entries:
