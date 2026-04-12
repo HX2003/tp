@@ -305,6 +305,8 @@ Exports the current full app state, including inventory and wishlist, to a file 
 
 **Example:** `download /f backups/cardcollector.txt`
 
+**Note:** Do not put spaces immediately before or after path separators (`/` or `\`). For example, use `download /f backups/cardcollector.txt`, not `download /f backups /cardcollector.txt`.
+
 ### Uploading a storage snapshot: `upload`
 
 Imports a previously exported storage file into the current session.
@@ -312,6 +314,8 @@ Imports a previously exported storage file into the current session.
 **Format:** `upload /f FILE_PATH`
 
 **Example:** `upload /f backups/cardcollector.txt`
+
+**Note:** Do not put spaces immediately before or after path separators (`/` or `\`). For example, use `upload /f backups/cardcollector.txt`, not `upload /f backups /cardcollector.txt`.
 
 `upload` warns before replacing the current in-memory inventory and wishlist. After a successful upload, you can use `undoupload` once to restore the previous session state. The app continues to auto-save to `data/cardcollector.txt`.
 

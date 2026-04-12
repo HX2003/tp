@@ -99,11 +99,13 @@ public class HelpCommand extends Command {
             }),
             new HelpTopic("download", List.of(), "export the full app state to a file", new String[] {
                 "download /f FILE_PATH",
-                "download /f backups/cardcollector.txt"
+                "download /f backups/cardcollector.txt",
+                "Do not put spaces before or after / or \\ in file paths."
             }),
             new HelpTopic("upload", List.of(), "import a previously exported app state file", new String[] {
                 "upload /f FILE_PATH",
-                "upload /f backups/cardcollector.txt"
+                "upload /f backups/cardcollector.txt",
+                "Do not put spaces before or after / or \\ in file paths."
             }),
             new HelpTopic("undoupload", List.of(), "restore the state from before the last upload", new String[] {
                 "undoupload"

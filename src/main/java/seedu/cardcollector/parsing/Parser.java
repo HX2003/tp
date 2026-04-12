@@ -1,5 +1,6 @@
 package seedu.cardcollector.parsing;
 
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import seedu.cardcollector.card.CardHistoryType;
 import seedu.cardcollector.card.NumericFilter;
@@ -593,7 +594,25 @@ public class Parser {
             );
         }
 
-        return Path.of(path);
+        if (hasWhitespaceAroundPathSeparator(path)) {
+            throw new ParseInvalidArgumentException(
+                    "File path cannot contain whitespace around path separators",
+                    getTransferUsage(commandWord)
+            );
+        }
+
+        try {
+            return Path.of(path);
+        } catch (InvalidPathException e) {
+            throw new ParseInvalidArgumentException(
+                    "File path contains invalid characters",
+                    getTransferUsage(commandWord)
+            );
+        }
+    }
+
+    private boolean hasWhitespaceAroundPathSeparator(String path) {
+        return path.matches(".*\\s[\\\\/].*") || path.matches(".*[\\\\/]\\s.*");
     }
 
     private String[] getTransferUsage(String commandWord) {

@@ -263,6 +263,11 @@ public class ParserTest {
 
         assertThrows(
                 ParseInvalidArgumentException.class,
+                () -> parser.parse("download /f /test /testing.txt")
+        );
+
+        assertThrows(
+                ParseInvalidArgumentException.class,
                 () -> parser.parse("undoupload now")
         );
     }
