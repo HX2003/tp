@@ -717,7 +717,7 @@ Some details related to parsing, Ui input handling and printing, have been omitt
 
 
 #### Sequence Diagram for History Command
-<img src="images/HistorySequenceDiagram.svg" width="600" />
+<img src="images/HistorySequenceDiagram.svg" width="800" />
 
 **Note:** The lifeline for `CommandContext` and `HistoryCommand` actually ends at the destroy marker (X), but due to a limitation in PlantUML, the dotted lifeline continues downwards.
 
