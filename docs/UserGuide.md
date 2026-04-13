@@ -4,15 +4,15 @@
 
 CardCollector is a CLI application for tracking a trading card inventory and a separate wishlist.
 Each card stores a name, quantity, price, optional metadata (set, rarity, condition,
-language, card number), and timestamps used by history commands.
+language, card number, note), and timestamps used by history commands.
 
 ## Quick Start
 
 1. Ensure that **Java 17** is installed.
-2. Download the latest `CardCollector.jar` release from our GitHub repository.
-3. Move the jar file to an empty folder.
-4. Open a command terminal, navigate to the folder where you placed the jar file, 
-   and run `java -jar CardCollector.jar`.
+2. Download the latest `.jar` file from our GitHub repository, or use another official source.
+3. Move the `.jar` file to an empty folder.
+4. Open a command terminal, navigate to the folder where you placed the file, 
+   and run `java -jar CardCollector.jar` (replace name with actual filename if different).
 5. You can start using the application.
 
 ## Features
