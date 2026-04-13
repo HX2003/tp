@@ -1,46 +1,65 @@
 # bryankuah's Project Portfolio Page
 
-**CardCollector** is a lightweight command-line application for trading card enthusiasts to manage their collections quickly and efficiently. It allows users to track cards in their inventory and wishlist, search, compare, reorder, edit, and review collection history from the terminal.
+## Project: CardCollector
 
-Given below are my contributions to the project.
+CardCollector is a lightweight command-line application for trading card enthusiasts to manage their collections quickly and efficiently.
 
-## Summary of Contributions
+### Enhancements
 
-**Code contributed**: [RepoSense link](https://nus-cs2113-ay2526-s2.github.io/tp-dashboard/?search=bryankuah)
+**New Feature**: Added the `edit` command
+* What it does: Allows users to modify any field (name, quantity, price, etc.) of an existing card in the inventory or wishlist using a clean flag-based syntax (e.g. `edit 3 -q 5 -p 120`).
+* Justification: Users frequently need to update card details as their collection changes. A flexible edit command improves usability significantly over having separate commands for each field.
+* Highlights: Supports partial updates (only specified fields are changed) and works on both inventory and wishlist with robust validation.
+* Relevant PRs: [#57](https://github.com/AY2526S2-CS2113-T11-3/tp/pull/57), [#59](https://github.com/AY2526S2-CS2113-T11-3/tp/pull/59)
 
-**Enhancements implemented**:
+**New Feature**: Added the `compare` command
+* What it does: Compares two cards side-by-side, clearly highlighting similarities and differences in key attributes.
+* Justification: Helps users make informed decisions when deciding which cards to acquire or trade.
+* Highlights: Supports comparison between any two cards from inventory or wishlist with clean formatted output.
+* Relevant PRs: [#61](https://github.com/AY2526S2-CS2113-T11-3/tp/pull/61)
 
-* **Implemented the `edit` command**  
-  Allows the user to modify any field of an existing card using flag-based syntax.
+**New Feature**: Added the `reorder` command
+* What it does: Permanently reorders the cards in the inventory or wishlist based on multiple criteria (name, price, quantity, last added, last modified) with support for ascending/descending order.
+* Justification: Provides users better organization of their collection according to their preference.
+* Highlights: Supports multiple sorting criteria and persists the new order.
+* Relevant PRs: [#70](https://github.com/AY2526S2-CS2113-T11-3/tp/pull/70)
 
-* **Implemented the `compare` command**  
-  Compares two cards and highlights similarities/differences. Works on both inventory and wishlist.
+**New Feature**: Added the `find` command with advanced search
+* What it does: Supports multi-field substring matching and range operators (e.g. price ranges).
+* Justification: As the collection grows, users need powerful search capabilities to quickly locate specific cards.
+* Highlights: Works on both inventory and wishlist lists.
+* Relevant PRs: [#120](https://github.com/AY2526S2-CS2113-T11-3/tp/pull/120)
 
-* **Implemented the `reorder` command**  
-  Permanently reorders cards in the inventory or wishlist by multiple criteria (name, price, quantity, last added, last modified) with ascending/descending options.
+**New Feature**: Implemented Wishlist support + `acquired` command
+* What it does: Adds full support for a separate `wishlist` list with the `wishlist acquired` command to move cards from wishlist to main inventory.
+* Justification: Many collectors maintain a wishlist of desired cards separate from owned cards.
+* Highlights: Integrated smoothly with existing commands and the undo system.
+* Relevant PRs: [#140](https://github.com/AY2526S2-CS2113-T11-3/tp/pull/140), [#57](https://github.com/AY2526S2-CS2113-T11-3/tp/pull/57)
 
-* **Implemented the `find` command**  
-  Advanced multi-field search with substring matching and range operators. Works on both inventory and wishlist.
+**New Feature**: Added the `clear` command
+* What it does: Clears all cards from the current list (inventory or wishlist). Reversible with the undo feature.
+* Justification: Users sometimes need to reset their list (e.g. starting fresh or after bulk operations).
+* Highlights: Works on both lists with proper confirmation and undo support.
+* Relevant PRs: [#202](https://github.com/AY2526S2-CS2113-T11-3/tp/pull/202)
 
-* **Implemented wishlist support**  
-  Added `wishlist` prefix to route commands to the separate wishlist list, plus the `wishlist acquired` command to move a card from wishlist to main inventory.
+### Code contributed
 
-* **Implemented the `clear` command**  
-  Clears all cards from the current list (inventory or wishlist). Action is reversible with `undo`.
+[RepoSense link](https://nus-cs2113-ay2526-s2.github.io/tp-dashboard/?search=bryankuah)
 
-**Testing**:
-* Wrote unit tests and integration tests for all features listed above (`EditCommandTest`, `CompareCommandTest`, `ReorderCommandTest`, `FindCommandTest`, `AcquiredCommandTest`, `ClearCommandTest`, etc.).
+### Documentation - User Guide
 
-### Contributions to the User Guide (Extracts)
-* Wrote the full documentation (format, examples, and notes) for the `edit`, `compare`, `reorder`, `find`, `wishlist` (including `wishlist acquired`), and `clear` commands.
-* Updated the overall command summary table and glossary where these features appear.
+* Wrote comprehensive documentation for the `edit`, `compare`, `reorder`, `find`, `wishlist` (including `acquired`), and `clear` commands.
+* Provided multiple usage examples and detailed notes for each feature.
+* Updated the Command Summary table and Glossary.
 
-### Contributions to the Developer Guide (Extracts)
-* Added implementation details, design considerations, and updated class/sequence diagrams for the `edit`, `compare`, `reorder`, `find`, `wishlist` routing, and `clear` features.
+### Documentation - Developer Guide
 
-**Contributions to team-based tasks**:
-* Reviewed and merged pull requests from team members.
-* Helped coordinate work
+* Added implementation details and design considerations for all features listed above.
+* Updated relevant class diagrams and sequence diagrams.
+* Documented the wishlist routing mechanism.
 
-**Review/mentoring contributions**:
-* Provided feedback on PRs
+### Contributions to Team Project
+
+* Wrote a comprehensive suite of unit and integration tests for all implemented features.
+* Reviewed pull requests from other team members.
+* Helped coordinate feature integration and resolve merge conflicts.
