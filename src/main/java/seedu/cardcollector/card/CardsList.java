@@ -36,9 +36,6 @@ public class CardsList {
         for (int i = 0; i < cards.size(); i++) {
             Card existingCard = cards.get(i);
             if (isSameCardVariant(existingCard, newCard)) {
-                // For duplicate handling, we reuse the editCard method,
-                // which gracefully handle edge cases,
-                // for example when new card has quantity = 0, which means no change occurred.
                 int updatedQuantity = existingCard.getQuantity() + newCard.getQuantity();
                 editCard(i, null, Box.of(updatedQuantity), null, null,
                         null, null, null, null, null);
